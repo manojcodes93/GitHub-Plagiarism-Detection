@@ -1,0 +1,63 @@
+"""
+Dashboard template for detailed plagiarism analysis results.
+Shows file-level and commit-level similarities.
+"""
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plagiarism Analysis Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📊 Plagiarism Analysis Dashboard</h1>
+        </header>
+
+        <main class="dashboard">
+            <!-- Overall Risk Assessment -->
+            <section class="risk-assessment">
+                <h2>Overall Risk Assessment</h2>
+                <div class="risk-gauge">
+                    <div id="riskIndicator" class="risk-indicator"></div>
+                    <div id="riskText" class="risk-text"></div>
+                </div>
+            </section>
+
+            <!-- File-Level Analysis -->
+            <section class="file-analysis">
+                <h2>File-Level Similarity Report</h2>
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>File 1</th>
+                            <th>File 2</th>
+                            <th>Similarity</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fileTableBody">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Detailed Comparison View -->
+            <section class="comparison-view">
+                <h2>Side-by-Side Code Comparison</h2>
+                <div id="comparisonContainer" class="comparison-container">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>Detailed plagiarism analysis powered by LLM reasoning and embeddings</p>
+        </footer>
+    </div>
+</body>
+</html>
