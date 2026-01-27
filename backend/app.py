@@ -195,7 +195,7 @@ def _perform_analysis(
     all_files = {}
     for i, (url, path) in enumerate(cloned_paths.items()):
         jobs[job_id]["progress"] = 20 + int((i / len(cloned_paths)) * 20)
-        files = git_analyzer.extract_files_by_language(path, language)
+        files = git_analyzer.extract_code_files(path, language)
         all_files[url] = files
         logger.info(f"Extracted {len(files)} {language} files from {url}")
     
@@ -226,14 +226,14 @@ def _perform_analysis(
                 continue
             
             # Compare files
-            file_comparisons = SimilarityAnalyzer.compare_files(
+            file_comparisons = similarity_analyzer.compare_files(
                 all_embeddings[url1],
                 all_embeddings[url2],
                 threshold
             )
             
             # Compute repo similarity
-            repo_similarity = SimilarityAnalyzer.compute_repository_similarity(
+            repo_similarity = similarity_analyzer.compute_repository_similarity(
                 all_embeddings[url1],
                 all_embeddings[url2]
             )
@@ -289,6 +289,13 @@ def _perform_analysis(
     
     # Save report
     _save_report(report)
+    
+    # Cleanup cloned repositories
+    try:
+        git_analyzer.clean_up()
+        logger.info(f"Cleaned up cloned repositories for job {job_id}")
+    except Exception as e:
+        logger.warning(f"Failed to cleanup repos: {str(e)}")
     
     jobs[job_id]["progress"] = 100
     logger.info(f"Analysis complete for job {job_id}")
@@ -358,6 +365,26 @@ def internal_error(error):
     return jsonify({"error": "Internal server error"}), 500
 
 
+def _validate_dependencies():
+    """Validate all required dependencies are installed."""
+    try:
+        import torch
+        import sentence_transformers
+        import git
+        logger.info("All dependencies validated successfully")
+        return True
+    except ImportError as e:
+        logger.error(f"Missing required dependency: {str(e)}")
+        logger.error("Please install requirements: pip install -r requirements.txt")
+        return False
+
+
 if __name__ == "__main__":
     logger.info("Starting Plagiarism Detection Application")
+    
+    # Validate dependencies before starting
+    if not _validate_dependencies():
+        logger.error("Failed to start: Missing dependencies")
+        exit(1)
+    
     app.run(debug=True, host="0.0.0.0", port=5000)

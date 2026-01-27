@@ -1,267 +1,209 @@
-"""
-LLM-based plagiarism reasoning module.
-Uses a code-focused LLM to determine if similarity indicates plagiarism.
-Provides explainable plagiarism judgments.
-"""
-
-import logging
-from typing import Dict, List, Any
-import json
-
-logger = logging.getLogger(__name__)
-
-try:
-    from transformers import AutoTokenizer, AutoModelForCausalLM
-    import torch
-    HAS_TRANSFORMERS = True
-except ImportError:
-    HAS_TRANSFORMERS = False
-    logger.warning("transformers not installed. Using mock LLM reasoning.")
-
+from typing import List, Dict
 
 class LLMReasoner:
-    """
-    Uses a Hugging Face code-focused LLM to make plagiarism judgments.
-    Provides explainable decisions about whether high similarity indicates plagiarism.
-    """
-    
-    def __init__(self, model_name: str = "Qwen/Qwen2.5-Coder-7B-Instruct"):
-        """
-        Initialize LLM reasoner.
-        
-        Args:
-            model_name: Hugging Face model identifier
-        """
-        self.model_name = model_name
+    def __init__(self):
         self.model = None
-        self.tokenizer = None
-        self.device = "cuda" if torch.cuda.is_available() else "cpu" if HAS_TRANSFORMERS else None
-        
-        if HAS_TRANSFORMERS:
-            try:
-                logger.info(f"Loading LLM model: {model_name}")
-                self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-                self.model = AutoModelForCausalLM.from_pretrained(
-                    model_name,
-                    torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
-                    device_map="auto"
-                )
-                logger.info(f"LLM loaded successfully on {self.device}")
-            except Exception as e:
-                logger.error(f"Failed to load LLM: {str(e)}")
-                self.model = None
-                self.tokenizer = None
+        self.model_name = "rule-based"
     
-    def _generate_response(self, prompt: str, max_length: int = 256) -> str:
+    def batch_judge_files(self, file_pairs):
         """
-        Generate response from LLM.
-        
-        Args:
-            prompt: Input prompt
-            max_length: Maximum response length
-            
-        Returns:
-            Generated text
+        Judge multiple file pairs for plagiarism.
         """
-        if self.model is None or self.tokenizer is None:
-            logger.warning("LLM not available")
-            return ""
-        
-        try:
-            inputs = self.tokenizer.encode(prompt, return_tensors="pt").to(self.device)
-            
-            with torch.no_grad():
-                outputs = self.model.generate(
-                    inputs,
-                    max_length=max_length,
-                    temperature=0.3,  # Low temperature for consistent judgments
-                    top_p=0.9,
-                    do_sample=True,
-                )
-            
-            response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-            return response
-            
-        except Exception as e:
-            logger.error(f"LLM generation failed: {str(e)}")
-            return ""
+        judgments = []
+        for pair in file_pairs:
+            judgment = self.judge_file_similarity(
+                pair['file1'],
+                pair['file2'],
+                pair.get('similarity', 0.5)
+            )
+            judgments.append(judgment)
+        return judgments
     
-    def judge_file_plagiarism(
+    def generate_plagiarism_explanation(self, repo1_name, repo2_name, file_pairs, similarity):
+        """Generate explanation for plagiarism detection."""
+        return self.generate_repository_report(repo1_name, repo2_name, file_pairs, similarity)
+
+    def judge_file_similarity(
         self,
         file1_path: str,
-        file1_content: str,
         file2_path: str,
-        file2_content: str,
         similarity_score: float
-    ) -> Dict[str, Any]:
-        """
-        Judge if two similar files indicate plagiarism using LLM reasoning.
-        
-        Args:
-            file1_path: Path of first file
-            file1_content: Content snippet of first file
-            file2_path: Path of second file
-            file2_content: Content snippet of second file
-            similarity_score: Embedding similarity score
-            
-        Returns:
-            {
-                "is_plagiarism": bool,
-                "confidence": float (0-1),
-                "reason": str,
-                "explanation": str
-            }
-        """
-        # Simple heuristics if LLM not available
-        if similarity_score > 0.95:
+    ) -> Dict:
+        ## Deciding if two files indicate plagiarism based on similarity score
+        if similarity_score >= 0.95:
             return {
                 "is_plagiarism": True,
                 "confidence": 0.95,
-                "reason": "Extreme similarity in embeddings",
-                "explanation": f"The files {file1_path} and {file2_path} have extremely high semantic similarity ({similarity_score:.2%}), suggesting potential plagiarism.",
+                "reason": "Extremely high similarity",
+                "explanation": (
+                    f"The files {file1_path} and {file2_path} "
+                    f"have very high semantic similarity "
+                    f"({similarity_score:.2%}), which strongly suggests plagiarism."
+                )
             }
-        elif similarity_score > 0.85:
+        
+        if similarity_score >= 0.85:
             return {
                 "is_plagiarism": True,
                 "confidence": 0.75,
                 "reason": "Very high similarity",
-                "explanation": f"High semantic similarity ({similarity_score:.2%}) detected. Likely plagiarism or direct copying.",
+                "explanation": (
+                    f"High semantic similarity ({similarity_score:.2%}) detected. "
+                    f"The logic appears highly similar."
+                )
             }
-        elif similarity_score > 0.75:
+        
+        if similarity_score >= 0.75:
             return {
                 "is_plagiarism": True,
-                "confidence": 0.6,
-                "reason": "High similarity with suspicious patterns",
-                "explanation": f"Similarity score {similarity_score:.2%} warrants manual review.",
+                "confidence": 0.75,
+                "reason": "Moderate-High similarity",
+                "explanation": (
+                    f"Similarity score ({similarity_score:.2%}) "
+                    f"suggests potential plagiarism."
+                )
             }
-        else:
+        
+        if similarity_score >= 0.65:
             return {
                 "is_plagiarism": False,
-                "confidence": 0.8,
-                "reason": "Similarity within normal range",
-                "explanation": f"Similarity score {similarity_score:.2%} is not indicative of plagiarism.",
+                "confidence": 0.6,
+                "reason": "Low-moderate similarity",
+                "explanation": (
+                    f"Similarity score ({similarity_score:.2%}) "
+                    f"may be due to common patterns."
+                )
             }
-    
-    def judge_commit_plagiarism(
-        self,
-        commit1_msg: str,
-        commit1_diff: str,
-        commit2_msg: str,
-        commit2_diff: str,
-        similarity_score: float
-    ) -> Dict[str, Any]:
-        """
-        Judge if two similar commits indicate plagiarism.
         
-        Args:
-            commit1_msg: First commit message
-            commit1_diff: First commit diff
-            commit2_msg: Second commit message
-            commit2_diff: Second commit diff
-            similarity_score: Embedding similarity score
-            
-        Returns:
-            Plagiarism judgment
-        """
+        return {
+            "is_plagiarism": False,
+            "confidence": 0.85,
+            "reason": "Low similarity",
+            "explanation": (
+                f"Similarity score ({similarity_score:.2%}) "
+                f"is within a normal range."
+            )
+        }
+    
+    def judge_commit_similarity(
+        self,
+        commit1_message: str,
+        commit2_message: str,
+        similarity_score: float
+    ) -> Dict:
+        ## Decide if two commits indicate plagiarism
         reasons = []
         confidence = 0.5
-        
-        # Check for identical messages
-        if commit1_msg.strip() == commit2_msg.strip():
+
+        if commit1_message.strip() == commit2_message.strip():
             reasons.append("Identical commit messages")
             confidence = 0.8
-        elif similarity_score > 0.9:
-            reasons.append("Extremely similar changes")
-            confidence = 0.85
-        elif similarity_score > 0.8:
-            reasons.append("Very similar changes")
-            confidence = 0.7
-        
-        is_plagiarism = confidence > 0.6
-        reason = " + ".join(reasons) if reasons else "Moderate similarity"
-        
+
+        if similarity_score >= 0.9:
+            reasons.append("Very similar code changes")
+            confidence = max(confidence, 0.85)
+
+        is_plagiarism = confidence >= 0.7
+
         return {
             "is_plagiarism": is_plagiarism,
             "confidence": confidence,
-            "reason": reason,
-            "explanation": f"Commits show {similarity_score:.2%} similarity with patterns: {reason}",
+            "reason": ", ".join(reasons) if reasons else "Moderate similarity",
+            "explanation": (
+                f"Commits show {similarity_score:.2%} similarity. "
+                f"Observed patterns: {', '.join(reasons) if reasons else 'None'}."
+            )
         }
     
-    def generate_plagiarism_explanation(
+    def generate_repository_report(
         self,
         repo1_name: str,
         repo2_name: str,
-        similar_files: List[Dict],
+        file_results: List[Dict],
         repo_similarity: float
     ) -> str:
-        """
-        Generate human-readable plagiarism explanation.
+        ## Generate enhanced plagiarism report with detailed formatting
+        from datetime import datetime
         
-        Args:
-            repo1_name: First repository name
-            repo2_name: Second repository name
-            similar_files: List of similar file pairs
-            repo_similarity: Repository-level similarity
+        report = []
+        report.append("=" * 80)
+        report.append("PLAGIARISM ANALYSIS REPORT")
+        report.append("=" * 80)
+        report.append("")
+        
+        # Analysis metadata
+        report.append(f"Analysis Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        report.append("")
+        
+        # Repositories section
+        report.append("REPOSITORIES")
+        report.append("├─ Repo 1: " + repo1_name)
+        report.append("└─ Repo 2: " + repo2_name)
+        report.append("")
+        
+        # Overall risk assessment
+        risk_level = "🔴 CRITICAL" if repo_similarity >= 0.85 else "🟡 WARNING" if repo_similarity >= 0.75 else "🟢 LOW RISK"
+        confidence_score = min(0.95, repo_similarity + 0.05)  # Confidence increases with similarity
+        
+        report.append("OVERALL RISK ASSESSMENT")
+        report.append(f"├─ Repository Similarity: {repo_similarity:.2%} {risk_level}")
+        report.append(f"├─ Suspicious Pairs: {len(file_results)}")
+        report.append(f"└─ Confidence Level: {confidence_score:.0%}")
+        report.append("")
+        
+        # Top suspicious matches
+        if file_results:
+            report.append("TOP SUSPICIOUS MATCHES")
+            for idx, result in enumerate(file_results[:10], start=1):
+                similarity_pct = result['similarity'] * 100
+                match_status = "🚨 CRITICAL" if result['similarity'] >= 0.95 else "⚠️  HIGH" if result['similarity'] >= 0.85 else "⚡ MEDIUM"
+                
+                report.append(f"{idx}. [{result['similarity']:.2%}] {match_status}")
+                report.append(f"   File 1: {result['file1']}")
+                report.append(f"   File 2: {result['file2']}")
+                report.append("")
             
-        Returns:
-            Human-readable explanation
-        """
-        explanation = f"""
-PLAGIARISM ANALYSIS REPORT
-=========================
-Repository 1: {repo1_name}
-Repository 2: {repo2_name}
-Repository Similarity Score: {repo_similarity:.2%}
-
-SUSPICIOUS FILE PAIRS ({len(similar_files)}):
-"""
-        
-        for i, pair in enumerate(similar_files[:10], 1):
-            explanation += f"""
-{i}. {pair['file1']} <-> {pair['file2']}
-   Similarity: {pair['similarity']:.2%}
-   Status: {pair['status'].upper()}
-"""
-        
-        if len(similar_files) > 10:
-            explanation += f"\n... and {len(similar_files) - 10} more similar pairs"
-        
-        # Overall verdict
-        if repo_similarity > 0.85:
-            explanation += "\n\nVERDICT: LIKELY PLAGIARISM - Recommend manual review"
-        elif repo_similarity > 0.75:
-            explanation += "\n\nVERDICT: SUSPICIOUS - Possible plagiarism or common libraries"
+            if len(file_results) > 10:
+                report.append(f"... and {len(file_results) - 10} more suspicious file pairs")
+                report.append("")
         else:
-            explanation += "\n\nVERDICT: LOW RISK - Similarity within acceptable range"
+            report.append("✅ NO SUSPICIOUS FILE PAIRS DETECTED")
+            report.append("")
         
-        return explanation
-    
-    def batch_judge_files(
-        self,
-        file_pairs: List[Dict]
-    ) -> List[Dict]:
-        """
-        Batch judge multiple file pairs.
+        # Verdict
+        report.append("=" * 80)
+        if repo_similarity >= 0.85:
+            verdict = "🛑 LIKELY PLAGIARISM - IMMEDIATE INVESTIGATION RECOMMENDED"
+            recommendations = [
+                "Review commit history for similarity patterns",
+                "Check for shared common dependencies or libraries",
+                "Compare code structure and logic flow between files",
+                "Investigate potential code reuse or copying"
+            ]
+        elif repo_similarity >= 0.75:
+            verdict = "⚠️  SUSPICIOUS - REQUIRES DETAILED REVIEW"
+            recommendations = [
+                "Examine the flagged file pairs manually",
+                "Check if repositories share legitimate common dependencies",
+                "Analyze commit timestamps for timeline correlation",
+                "Verify if similarity is due to following same tutorial/pattern"
+            ]
+        else:
+            verdict = "✅ LOW RISK - NO ACTION REQUIRED"
+            recommendations = [
+                "Repositories show normal code diversity",
+                "Similarity levels consistent with independent development",
+                "Continue monitoring for future changes"
+            ]
         
-        Args:
-            file_pairs: List of similar file pairs from similarity analyzer
-            
-        Returns:
-            Judgments for each pair
-        """
-        judgments = []
+        report.append(f"VERDICT: {verdict}")
+        report.append("")
         
-        for pair in file_pairs:
-            judgment = self.judge_file_plagiarism(
-                pair["file1"],
-                "",  # Content not available in this context
-                pair["file2"],
-                "",
-                pair["similarity"]
-            )
-            judgments.append({
-                **pair,
-                "judgment": judgment
-            })
+        report.append("RECOMMENDATIONS:")
+        for i, rec in enumerate(recommendations, 1):
+            report.append(f"  {i}. {rec}")
         
-        return judgments
+        report.append("")
+        report.append("=" * 80)
+        
+        return "\n".join(report)
