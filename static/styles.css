@@ -72,6 +72,19 @@ body {
     background-clip: text;
 }
 
+.logo-image {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+    border-radius: 50%;
+    filter: drop-shadow(0 0 8px rgba(124, 58, 237, 0.4));
+    transition: filter 0.3s;
+}
+
+.nav-logo:hover .logo-image {
+    filter: drop-shadow(0 0 15px rgba(124, 58, 237, 0.8));
+}
+
 .logo-icon {
     font-size: 2rem;
 }
@@ -101,10 +114,11 @@ body {
     background-size: cover;
     padding: 6rem 2rem;
     text-align: center;
-    min-height: 500px;
+    height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .hero-content {

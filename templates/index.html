@@ -12,7 +12,7 @@
         <nav class="navbar">
             <div class="nav-container">
                 <div class="nav-logo">
-                    <span class="logo-icon">🔍</span>
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="CodeMirror Logo" class="logo-image">
                     <span class="logo-text">CodeMirror</span>
                 </div>
                 <ul class="nav-menu">
@@ -37,7 +37,7 @@
         </section>
 
         <!-- Main Container -->
-        <div class="container">
+        <div class="container" id="mainContainer" style="display: none;">
             <!-- Analysis Form Section -->
             <section id="analysisSection" class="analysis-section">
                 <div class="section-header">
@@ -199,10 +199,12 @@
         }
 
         function scrollToAnalysis() {
+            document.getElementById('mainContainer').style.display = 'block';
             document.getElementById('analysisSection').scrollIntoView({ behavior: 'smooth' });
         }
 
         function scrollToDashboard() {
+            document.getElementById('mainContainer').style.display = 'block';
             document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
         }
 

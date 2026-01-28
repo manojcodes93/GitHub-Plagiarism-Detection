@@ -20,8 +20,22 @@ class GitHubAnalyzer:
         unique_name = f"{repo_name}_{abs(hash(repo_url)) % 10000}"
         local_path = os.path.join(self.base_dir, unique_name)
 
+        # Clean up existing directory with retry logic
         if os.path.exists(local_path):
-            shutil.rmtree(local_path)
+            try:
+                shutil.rmtree(local_path)
+            except Exception as e:
+                # If rmtree fails, try alternative approach
+                import time
+                time.sleep(0.5)
+                try:
+                    shutil.rmtree(local_path)
+                except Exception:
+                    # Create parent directory if it doesn't exist
+                    os.makedirs(os.path.dirname(local_path), exist_ok=True)
+
+        # Ensure parent directory exists
+        os.makedirs(os.path.dirname(local_path), exist_ok=True)
 
         ## Cloning
         try:
