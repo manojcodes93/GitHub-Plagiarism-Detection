@@ -16,10 +16,30 @@ class SimilarityAnalyzer:
         similarity = np.dot(vec1, vec2) / (norm1 * norm2)
         return float(similarity)
     
+    def token_similarity(self, code1: str, code2: str) -> float:
+        """
+        Compute Jaccard similarity between token sets.
+        """
+        if not code1 or not code2:
+            return 0.0
+        
+        tokens1 = set(code1.split())
+        tokens2 = set(code2.split())
+        
+        intersection = tokens1.intersection(tokens2)
+        union = tokens1.union(tokens2)
+        
+        if not union:
+            return 0.0
+        
+        return len(intersection) / len(union)
+    
     @staticmethod
     def compare_files(
         repo1_embeddings: Dict[str, np.ndarray],
         repo2_embeddings: Dict[str, np.ndarray],
+        repo1_code: Dict[str, str],
+        repo2_code: Dict[str, str],
         threshold: float = 0.75
     ) -> List[Dict]:
         ## Comparing the files across two repositories
@@ -28,14 +48,22 @@ class SimilarityAnalyzer:
 
         for file1, emb1 in repo1_embeddings.items():
             for file2, emb2 in repo2_embeddings.items():
+                code1 = repo1_code.get(file1, "")
+                code2 = repo2_code.get(file2, "")
 
-                similarity = analyzer.cosine_similarity(emb1, emb2)
+                embed_sim = analyzer.cosine_similarity(emb1, emb2)
+                token_sim = analyzer.token_similarity(code1, code2)
 
-                if similarity >= threshold:
+                # Weighted plagiarism score
+                plagiarism_score = (0.6 * token_sim) + (0.4 * embed_sim)
+
+                if plagiarism_score >= threshold:
                     similar_files.append({
                         "file1": file1,
                         "file2": file2,
-                        "similarity": similarity,
+                        "embedding_similarity": embed_sim,
+                        "token_similarity": token_sim,
+                        "similarity": plagiarism_score,
                         "status": "flagged"
                     })
         
@@ -67,4 +95,4 @@ class SimilarityAnalyzer:
             
             max_similarities.append(best_match)
         
-        return float(np.mean(max_similarities))
+        return float(np.median(max_similarities))
