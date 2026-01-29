@@ -1,5 +1,6 @@
 import re
 from typing import Dict
+import keyword
 
 class CodePreprocessor:
     def remove_comments(self, code: str, language: str = "python") -> str:
@@ -40,17 +41,32 @@ class CodePreprocessor:
 
         return code
     
-    def normalize_identifiers(self, code: str) -> str:
-        ## Normalizing identifiers
+    def normalize_identifiers(self, code: str, language: str = "python") -> str:
+        """
+        Normalize user-defined identifiers while preserving keywords and structure.
+        """
+        if language != "python":
+            return code
         
-        code = re.sub(r'["\'].*?["\']', "TOKEN_STRING", code)
-
-        code = re.sub(r"\b\d+\b", "TOKEN_NUMBER", code)
-
-        code = re.sub(r"\b[a-zA-Z_]\w*\b", "TOKEN_NAME", code)
-
+        python_keywords = set(keyword.kwlist)
+        python_builtins = set(dir(__builtins__))
+        
+        def replacer(match):
+            token = match.group(0)
+            if token in python_keywords or token in python_builtins:
+                return token
+            return "VAR"
+        
+        # Replace variable and function names, not keywords
+        
+        code = re.sub(r"\b[a-zA-Z_]\w*\b", replacer, code)
+        
+        # Normalize numbers and strings
+        code = re.sub(r"\b\d+\b", "NUM", code)
+        code = re.sub(r'(["\']).*?\1', "STR", code)
+        
         return code
-    
+
     def preprocess(
         self,
         code: str,
@@ -63,7 +79,7 @@ class CodePreprocessor:
         code = self.normalize_whitespace(code)
 
         if aggressive:
-            code = self.normalize_identifiers(code)
+            code = self.normalize_identifiers(code, language)
             code = self.normalize_whitespace(code)
 
         return code
