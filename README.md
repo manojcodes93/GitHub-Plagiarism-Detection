@@ -1,367 +1,205 @@
-# GitHub Commit Plagiarism Detection Web Application
+🚨 GitHub Commit Plagiarism Detection System
 
-## 🎯 Overview
+A web-based system to detect potential code plagiarism across multiple GitHub repositories using file-level and commit-level analysis with semantic embeddings and structural similarity.
 
-An **LLM-first plagiarism detection system** that analyzes multiple GitHub repositories and identifies potential plagiarism using:
+This project is designed for internship hiring, academic project reviews, and hackathons, where candidates submit GitHub repositories and plagiarism is difficult to detect manually.
 
-- **Semantic embeddings** (Hugging Face sentence-transformers)
-- **Cosine similarity** for code comparison
-- **LLM reasoning** for explainable plagiarism judgments
-- **Flask** web UI for interactive analysis
+🎯 Problem Statement
 
-## 🧠 Core Philosophy
+When multiple candidates submit GitHub repositories:
 
-Instead of traditional rule-heavy approaches (AST, string matching), this system uses:
+Code may be renamed, reformatted, or split across commits
 
-1. **Embeddings** to understand code semantically
-2. **LLMs** to reason about whether similarity indicates plagiarism
-3. **Explainability** to show why code is flagged
+Manual review fails to detect semantic plagiarism
 
-## 🛠 Tech Stack
+Commit history is often ignored
 
-| Component | Technology |
-|-----------|-----------|
-| **Backend** | Python + Flask |
-| **Frontend** | HTML + CSS + JavaScript |
-| **Git Handling** | GitPython |
-| **Embeddings** | Hugging Face `sentence-transformers/all-MiniLM-L6-v2` |
-| **LLM Reasoning** | `Qwen/Qwen2.5-Coder-7B-Instruct` (optional) |
-| **Similarity** | Cosine similarity (scipy) |
+This system automatically analyzes repositories, files, and commits to identify suspicious similarities and presents clear, explainable results through a web UI.
 
-## 📥 Features
+✅ Key Features
+🔍 Repository-Level Analysis
 
-### Inputs
-- List of GitHub repository URLs (2-10 repositories)
-- Target programming language (Python, Java, JavaScript, TypeScript, C#, C++)
-- Branch name (default: `main`)
-- Similarity threshold (0.5-1.0)
+Computes repository-to-repository similarity
 
-### Outputs
-- ✅ Repository-to-repository similarity scores
-- 📊 Similarity matrix visualization
-- 🚨 Flagged repository pairs
-- 📄 File-level similarity report
-- 💾 Downloadable JSON report
+Uses median of best file matches for robustness
 
-### Detection Logic
+Displays results in a similarity matrix
 
-**File-Level Analysis:**
-1. Clone repositories
-2. Extract source files of target language
-3. Preprocess code (remove comments, normalize whitespace)
-4. Generate embeddings for each file
-5. Compute cosine similarity
-6. Flag pairs above threshold
+📄 File-Level Plagiarism Detection
 
-**Repository-Level Scoring:**
-1. Aggregate file similarities
-2. Compute average-max similarity between repositories
-3. Use LLM to judge if patterns indicate plagiarism
+Preprocesses code (comments, imports, identifiers)
 
-## 🚀 Quick Start
+Combines:
 
-### 1. Clone and Setup
+Token-based similarity (Jaccard)
 
-```bash
-git clone <this-repo>
-cd plagiarism-detector
-pip install -r requirements.txt
-```
+Semantic similarity (Sentence-BERT embeddings)
 
-### 2. Run the Application
+Flags highly similar files with scores
 
-```bash
-cd backend
-python app.py
-```
+🧾 Commit-Level Analysis
 
-The app runs at `http://localhost:5000`
+Analyzes commit diffs (added/removed lines only)
 
-### 3. Use the Web UI
+Detects:
 
-1. **Enter Repository URLs**: Paste GitHub URLs (one per line)
-2. **Select Language**: Choose target language
-3. **Set Threshold**: Adjust similarity threshold (default: 0.75)
-4. **Analyze**: Click "Analyze Repositories"
-5. **Review Results**: View similarity matrix and flagged pairs
-6. **Download Report**: Export results as JSON
+Large similar commits
 
-## 📁 Project Structure
+Similar commit messages
 
-```
-plagiarism-detector/
-├── backend/
-│   ├── app.py                    # Flask web server
-│   ├── analyzer/
-│   │   ├── __init__.py
-│   │   ├── github.py             # Repo cloning + commit extraction
-│   │   ├── preprocess.py         # Code normalization
-│   │   ├── embeddings.py         # Hugging Face embeddings
-│   │   ├── similarity.py         # Cosine similarity
-│   │   └── llm_reasoner.py       # LLM-based plagiarism judgment
-│   └── reports/                  # Generated reports (JSON)
-│
-├── templates/
-│   ├── index.html                # Main UI page
-│   └── dashboard.html            # Results dashboard
-│
-├── static/
-│   ├── styles.css                # Responsive styling
-│   └── script.js                 # Frontend logic
-│
-├── requirements.txt              # Python dependencies
-└── README.md                     # This file
-```
+Similar code changes across repositories
 
-## 🤖 LLM Usage
+🧠 Explainability Layer
 
-### Embeddings (Mandatory)
+Rule-based LLM reasoning
 
-**Model**: `sentence-transformers/all-MiniLM-L6-v2`
-- Lightweight, efficient, 384-dimensional embeddings
-- Pre-trained on 215M+ sentence pairs
-- Perfect for code similarity tasks
+Generates human-readable explanations
 
-**Purpose:**
-- File-level similarity detection
-- Repository-level aggregation
-- Semantic code comparison (beyond string matching)
+Helps reviewers understand why something is flagged
 
-### LLM Reasoning (Optional but Recommended)
+🌐 Web Application
 
-**Model**: `Qwen/Qwen2.5-Coder-7B-Instruct`
-- Specialized in code understanding
-- Makes explainable plagiarism judgments
-- Explains why code is flagged
+Input GitHub repo URLs
 
-**Purpose:**
-- Decides if high similarity = plagiarism
-- Generates human-readable explanations
-- Reduces false positives
+Select language, branch, similarity threshold
 
-## 🔍 How It Works
+Interactive dashboard:
 
-### Step 1: Code Preprocessing
+Similarity matrix
 
-```python
-# Removes noise while preserving semantics
-- Comments (Python #, Java //, etc.)
-- Whitespace normalization
-- Import statements
-- Optionally: identifier renaming for aggressive detection
-```
+Flagged repository pairs
 
-### Step 2: Embedding Generation
+File-level and commit-level details
 
-```python
-# Convert code to semantic vectors
-file_content → SentenceTransformer → 384-dim embedding
-commit_diff → SentenceTransformer → 384-dim embedding
-```
+Downloadable JSON plagiarism report
 
-### Step 3: Similarity Computation
+🧠 How It Works (Pipeline)
 
-```python
-# Cosine similarity: -1 to 1 (higher = more similar)
-similarity = dot_product(normalized_vec1, normalized_vec2)
+Clone GitHub repositories
 
-# Flagging thresholds
-similarity > 0.95 → CRITICAL
-similarity > 0.85 → HIGH SUSPICION
-similarity > 0.75 → MEDIUM SUSPICION
-similarity > 0.65 → LOW SUSPICION
-```
+Extract source code files (language-specific)
 
-### Step 4: LLM Reasoning
+Preprocess code
 
-```python
-# LLM analyzes:
-- Commit message similarities
-- Pattern of changes
-- Code structure alignment
-- Library/framework usage
+Remove comments & imports
 
-# Output: Confidence score + explanation
-```
+Normalize whitespace
 
-## 🧪 API Endpoints
+Normalize identifiers (aggressive mode)
 
-### Analysis
+Generate embeddings
 
-**POST** `/api/analyze`
-```json
+Code is chunked into small blocks
+
+Sentence-BERT embeddings
+
+Mean pooling per file
+
+Similarity computation
+
+File-level: token + embedding similarity
+
+Repo-level: median best-match similarity
+
+Commit-level analysis
+
+Diff-based embeddings
+
+Cross-repo commit comparison
+
+Reasoning & report generation
+
+🛠 Tech Stack
+
+Backend
+
+Python
+
+Flask
+
+GitPython
+
+SentenceTransformers (MiniLM)
+
+NumPy
+
+Frontend
+
+HTML, CSS, JavaScript
+
+Interactive dashboard
+
+Progress tracking & modal views
+
+📥 Input
 {
-  "repos": ["https://github.com/user/repo1", "https://github.com/user/repo2"],
+  "repos": [
+    "https://github.com/user/repo1",
+    "https://github.com/user/repo2"
+  ],
   "language": "python",
   "branch": "main",
   "threshold": 0.75
 }
-```
 
-**Response:**
-```json
-{
-  "job_id": "uuid",
-  "status": "processing"
-}
-```
+📤 Output
 
-### Results
+Repository similarity matrix
 
-**GET** `/api/results/<job_id>`
-```json
-{
-  "id": "job_id",
-  "status": "completed",
-  "progress": 100,
-  "results": {
-    "summary": {...},
-    "suspicious_pairs": [...],
-    "repository_matrix": {...}
-  }
-}
-```
+Flagged repository pairs
 
-### Health
+File-level similarity scores
 
-**GET** `/api/health`
-```json
-{
-  "status": "healthy",
-  "embedding_model": "loaded",
-  "llm_model": "qwen2.5-coder-7b"
-}
-```
+Commit-level plagiarism indicators
 
-## 💡 Key Design Decisions
+Explainable reasoning
 
-### Why Embeddings?
-- **Semantic Understanding**: Detects copied logic, not just identical code
-- **Language Agnostic**: Works across Python, Java, JavaScript, etc.
-- **Efficient**: Pre-computed, no real-time processing needed
-- **Explainable**: Can visualize similarities
+Downloadable JSON report
 
-### Why LLM?
-- **Context Awareness**: Understands code intent, not just syntax
-- **Explainability**: Provides reasoning for flagged code
-- **Flexibility**: Can be customized for domain-specific rules
-- **Better Accuracy**: Reduces false positives vs. rule-based systems
+🚀 How to Run
+1️⃣ Clone the repository
+git clone https://github.com/manojcodes93/GitHub-Plagiarism-Detection.git
+cd GitHub-Plagiarism-Detection/backend
 
-### Why Not Traditional Tools?
-- ❌ AST-based: Too brittle, fails on variable renames
-- ❌ String matching: Misses copied logic with different structure
-- ❌ MOSS-style hashing: Can't detect semantic plagiarism
-- ✅ Embeddings + LLM: Semantic similarity + explainability
+2️⃣ Install dependencies
+pip install -r requirements.txt
 
-## ⚙️ Configuration
+3️⃣ Run the app
+python app.py
 
-### Supported Languages
-- Python
-- Java
-- JavaScript
-- TypeScript
-- C#
-- C++
-
-### Similarity Thresholds
-- **Recommended**: 0.75 (catches most plagiarism)
-- **Conservative**: 0.85 (high confidence only)
-- **Aggressive**: 0.65 (catch all similar code)
-
-### Performance Tuning
-- Max repositories: 10
-- Max commit history: 50 commits per repo
-- Max file size for embedding: 10,000 chars (truncated)
-
-## 🔒 Security & Privacy
-
-- ✅ Code is analyzed locally
-- ✅ No external API calls (embeddings run locally)
-- ✅ Reports are JSON-based
-- ✅ No data stored beyond current session
-
-## 🎯 Example Usage
-
-```bash
-# 1. Run the app
-python backend/app.py
-
-# 2. Open browser
+4️⃣ Open in browser
 http://localhost:5000
 
-# 3. Enter repository URLs
-https://github.com/student1/assignment
-https://github.com/student2/assignment
-https://github.com/student3/assignment
+⚠️ Constraints & Design Choices
 
-# 4. Select language: Python
-# 5. Set threshold: 0.75
-# 6. Click Analyze
+Supports one programming language at a time
 
-# 7. Results show:
-# - Similarity matrix
-# - Flagged pairs with scores
-# - File-level comparisons
-# - LLM explanations
-```
+Max 10 repositories per analysis
 
-## 📊 Example Output
+Focuses on detection & explanation, not enforcement
 
-```json
-{
-  "job_id": "a1b2c3d4",
-  "summary": {
-    "total_repos": 3,
-    "suspicious_pairs": 2,
-    "total_file_pairs_compared": 45
-  },
-  "suspicious_pairs": [
-    {
-      "repo1": "https://github.com/alice/ml-project",
-      "repo2": "https://github.com/bob/ml-project",
-      "repo_similarity": 0.92,
-      "file_pairs": [
-        {
-          "file1": "data_loader.py",
-          "file2": "loader.py",
-          "similarity": 0.96,
-          "status": "critical"
-        }
-      ],
-      "explanation": "Extremely high semantic similarity in data loading logic..."
-    }
-  ]
-}
-```
+Uses semantic similarity, not exact matching
 
-## 🚨 Important Constraints
+Synchronous processing (safe for hackathon scale)
 
-- ✅ Limited to **one programming language** per analysis
-- ✅ Supports **up to 10 repositories** per job
-- ✅ Focus on **detection + explanation**, not enforcement
-- ✅ Designed for **hackathon readiness** (clean, modular code)
+🧪 Example Use Cases
 
-## 🤝 Contributing
+Internship hiring plagiarism checks
 
-This is a hackathon-ready project. Feel free to:
-- Add more languages
-- Improve LLM reasoning
-- Enhance UI/UX
-- Add batch processing
-- Integrate with CI/CD
+Academic project evaluation
 
-## 📝 License
+Detecting copied GitHub assignments
 
-MIT License - Use freely for academic/research purposes
+Code originality analysis
 
-## 🎓 Academic Use
+📌 Future Improvements
 
-This tool is designed for:
-- ✅ Academic integrity checking
-- ✅ Assignment plagiarism detection
-- ✅ Code similarity analysis
-- ✅ Internship candidate screening
+Async background jobs (Celery / Redis)
 
----
+AST-based structural similarity
 
-**Built with ❤️ for developers, by developers. LLM-first approach for better plagiarism detection.**
+Cross-language plagiarism detection
+
+Visual side-by-side code diff viewer
+
+User authentication & history tracking
