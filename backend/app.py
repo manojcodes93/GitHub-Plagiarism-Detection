@@ -4,6 +4,7 @@ LLM-first approach: Uses embeddings and semantic analysis for accurate plagiaris
 """
 
 import os
+import threading
 from itertools import combinations
 import json
 import uuid
@@ -106,10 +107,21 @@ def analyze():
         
         # Process analysis in background (synchronously for now)
         try:
-            results = _perform_analysis(repos, language, branch, threshold, job_id)
-            jobs[job_id]["status"] = "completed"
-            jobs[job_id]["results"] = results
-            jobs[job_id]["progress"] = 100
+            def run_analysis():
+                try:
+                    results = _perform_analysis(repos, language, branch, threshold, job_id)
+                    jobs[job_id]["status"] = "completed"
+                    jobs[job_id]["results"] = results
+                    jobs[job_id]["progress"] = 100
+                
+                except Exception as e:
+                    logger.error(f"Analysis failed: {str(e)}")
+                    jobs[job_id]["status"] = "failed"
+                    jobs[job_id]["error"] = str(e)
+                    
+            thread = threading.Thread(target=run_analysis, daemon=True)
+            thread.start()
+
         except Exception as e:
             logger.error(f"Analysis failed: {str(e)}")
             jobs[job_id]["status"] = "failed"
@@ -117,7 +129,7 @@ def analyze():
         
         return jsonify({
             "job_id": job_id,
-            "status": jobs[job_id]["status"]
+            "status": "processing"
         })
     
     except Exception as e:
