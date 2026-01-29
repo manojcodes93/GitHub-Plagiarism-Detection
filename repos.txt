@@ -1,0 +1,8 @@
+### Some repos to test
+
+1. https://github.com/geekcomputers/Python
+2. https://github.com/AutomationPanda/python-testing-101
+3. https://github.com/ndleah/python-mini-project
+4. https://github.com/thegeekyb0y/pythonprojects
+5. https://github.com/king04aman/All-In-One-Python-Projects
+6. https://github.com/neubig/starter-repo

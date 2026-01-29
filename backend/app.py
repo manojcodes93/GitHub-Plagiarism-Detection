@@ -247,44 +247,47 @@ def _perform_analysis(
 
             commit_flags = []
 
-            for c1, c2 in combinations(commits1, commits2):
-                if c1["files_changed"] < 3 or c2["files_changed"] < 3:
-                    continue
+            MAX_COMMIT_PAIRS = 15
+            jobs[job_id]["progress"] = 80
+            for c1 in commits1[:MAX_COMMIT_PAIRS]:
+                for c2 in commits2[:MAX_COMMIT_PAIRS]:
+                    if c1["files_changed"] < 3 or c2["files_changed"] < 3:
+                        continue
+                    
+                    diffs1 = git_analyzer.extract_commit_diff(
+                        cloned_paths[url1],
+                        c1["hash"],
+                        language
+                    )
+                    
+                    diffs2 = git_analyzer.extract_commit_diff(
+                        cloned_paths[url2],
+                        c2["hash"],
+                        language
+                    )
                 
-                diffs1 = git_analyzer.extract_commit_diff(
-                    cloned_paths[url1],
-                    c1["hash"],
-                    language
-                )
+                    if not diffs1 or not diffs2:
+                        continue
                 
-                diffs2 = git_analyzer.extract_commit_diff(
-                    cloned_paths[url2],
-                    c2["hash"],
-                    language
-                )
+                    emb1 = embedding_generator.embed_commit_diffs(list(diffs1.values()))
+                    emb2 = embedding_generator.embed_commit_diffs(list(diffs2.values()))
                 
-                if not diffs1 or not diffs2:
-                    continue
+                    # Compare average commit embeddings
+                    sim = similarity_analyzer.cosine_similarity(
+                        np.mean(emb1, axis=0),
+                        np.mean(emb2, axis=0)
+                    )
                 
-                emb1 = embedding_generator.embed_commit_diffs(list(diffs1.values()))
-                emb2 = embedding_generator.embed_commit_diffs(list(diffs2.values()))
-                
-                # Compare average commit embeddings
-                sim = similarity_analyzer.cosine_similarity(
-                    np.mean(emb1, axis=0),
-                    np.mean(emb2, axis=0)
-                )
-                
-                if sim >= threshold:
-                    commit_flags.append({
-                        "commit1": c1["hash"],
-                        "commit2": c2["hash"],
-                        "similarity": sim,
-                        "files1": c1["files"],
-                        "files2": c2["files"],
-                        "message1": c1["message"],
-                        "message2": c2["message"]
-                    })
+                    if sim >= threshold:
+                        commit_flags.append({
+                            "commit1": c1["hash"],
+                            "commit2": c2["hash"],
+                            "similarity": sim,
+                            "files1": c1["files"],
+                            "files2": c2["files"],
+                            "message1": c1["message"],
+                            "message2": c2["message"]
+                        })
             
             comparison_results.append({
                 "repo1": url1,
