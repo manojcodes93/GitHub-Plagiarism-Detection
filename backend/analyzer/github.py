@@ -4,6 +4,7 @@ import tempfile
 from pathlib import Path
 from typing import List, Dict
 from git import Repo
+import hashlib
 
 class GitHubAnalyzer:
 
@@ -17,7 +18,8 @@ class GitHubAnalyzer:
         ## Cloning the GitHub repository locally
 
         repo_name = repo_url.split("/")[-1].replace(".git", "")
-        unique_name = f"{repo_name}_{abs(hash(repo_url)) % 10000}"
+        repo_hash = hashlib.md5(repo_url.encode()).hexdigest()[:8]
+        unique_name = f"{repo_name}_{repo_hash}"
         local_path = os.path.join(self.base_dir, unique_name)
 
         # Clean up existing directory with retry logic
@@ -53,42 +55,58 @@ class GitHubAnalyzer:
 
         for commit in repo.iter_commits(max_count=limit):
             commits.append({
-                "hash": commit.hexsha[:8],
+                "hash": commit.hexsha,
                 "message": commit.message.strip(),
                 "author": commit.author.name,
                 "timestamp": commit.committed_datetime.isoformat(),
                 "files_changed": len(commit.stats.files),
                 "insertions": sum(f["insertions"] for f in commit.stats.files.values()),
                 "deletions": sum(f["deletions"] for f in commit.stats.files.values()),
+                "files": list(commit.stats.files.keys()),
             })
 
         return commits
     
-    def extract_commit_diff(self, repo_path: str, commit_hash: str) -> str:
-        ## Extracting the unified diff for a commit
+    def extract_commit_diff(self, repo_path: str, commit_hash: str, language: str = "python") -> Dict[str, str]:
+        ## Extract per-file diffs for a commit, filtered by language.
+        ## Returns: {file_path: diff_text}
         repo = Repo(repo_path)
         commit = repo.commit(commit_hash)
 
+        extensions = {
+            "python": [".py"],
+            "java": [".java"],
+            "javascript": [".js"],
+            "typescript": [".ts"],
+            "csharp": [".cs"],
+            "cpp": [".cpp", ".cc", ".cxx", ".c++", ".h"],
+        }.get(language, [])
+
+        diffs_by_file = {}
+
         ## Comparing with parent commit
         if commit.parents:
-            diffs = commit.parents[0].diff(commit)
+            diffs = commit.parents[0].diff(commit, create_patch=True)
         else:
-            diffs = commit.tree.diff(None)
+            diffs = commit.diff(None, create_patch=True)
             
-        diff_text = ""
-        
         for diff in diffs:
-            if diff.a_path:
-                diff_text += f"--- {diff.a_path}\n"
-            if diff.b_path:
-                diff_text += f"+++ {diff.b_path}\n"
-                
-            if isinstance(diff.diff, bytes):
-                diff_text += diff.diff.decode(errors="ignore")
-            else:
-                diff_text += diff.diff
+            file_path = diff.b_path or diff.a_path
+            if not file_path:
+                continue
 
-        return diff_text
+            if extensions and not any(file_path.endswith(ext) for ext in extensions):
+                continue
+                
+            if diff.diff is None:
+                # Skip binary files (images, compiled objects, etc.)
+                continue
+
+            diff_text = diff.diff.decode(errors="ignore")
+            if diff_text.strip():
+                diffs_by_file[file_path] = diff_text
+
+        return diffs_by_file
     
     def extract_code_files(self, repo_path: str, language: str = "python") -> Dict[str, str]:
         ## Extracting the source code files of a given language
