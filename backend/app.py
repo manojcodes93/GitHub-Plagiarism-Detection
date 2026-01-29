@@ -4,6 +4,7 @@ LLM-first approach: Uses embeddings and semantic analysis for accurate plagiaris
 """
 
 import os
+from itertools import combinations
 import json
 import uuid
 import logging
@@ -229,6 +230,8 @@ def _perform_analysis(
             file_comparisons = similarity_analyzer.compare_files(
                 all_embeddings[url1],
                 all_embeddings[url2],
+                preprocessed_files[url1],
+                preprocessed_files[url2],
                 threshold
             )
             
@@ -237,13 +240,59 @@ def _perform_analysis(
                 all_embeddings[url1],
                 all_embeddings[url2]
             )
+
+            # --- Commit-level analysis ---
+            commits1 = git_analyzer.extract_commits(cloned_paths[url1], limit=50)
+            commits2 = git_analyzer.extract_commits(cloned_paths[url2], limit=50)
+
+            commit_flags = []
+
+            for c1, c2 in combinations(commits1, commits2):
+                if c1["files_changed"] < 3 or c2["files_changed"] < 3:
+                    continue
+                
+                diffs1 = git_analyzer.extract_commit_diff(
+                    cloned_paths[url1],
+                    c1["hash"],
+                    language
+                )
+                
+                diffs2 = git_analyzer.extract_commit_diff(
+                    cloned_paths[url2],
+                    c2["hash"],
+                    language
+                )
+                
+                if not diffs1 or not diffs2:
+                    continue
+                
+                emb1 = embedding_generator.embed_commit_diffs(list(diffs1.values()))
+                emb2 = embedding_generator.embed_commit_diffs(list(diffs2.values()))
+                
+                # Compare average commit embeddings
+                sim = similarity_analyzer.cosine_similarity(
+                    np.mean(emb1, axis=0),
+                    np.mean(emb2, axis=0)
+                )
+                
+                if sim >= threshold:
+                    commit_flags.append({
+                        "commit1": c1["hash"],
+                        "commit2": c2["hash"],
+                        "similarity": sim,
+                        "files1": c1["files"],
+                        "files2": c2["files"],
+                        "message1": c1["message"],
+                        "message2": c2["message"]
+                    })
             
             comparison_results.append({
                 "repo1": url1,
                 "repo2": url2,
                 "repo_similarity": repo_similarity,
                 "file_pairs": file_comparisons,
-                "suspicious_pair": repo_similarity > threshold,
+                "commit_pairs": commit_flags,
+                "suspicious_pair": repo_similarity > threshold or bool(commit_flags),
             })
     
     # Step 6: LLM reasoning on flagged pairs
@@ -275,6 +324,7 @@ def _perform_analysis(
         "summary": {
             "total_repos": len(repo_urls),
             "suspicious_pairs": len(flagged_pairs),
+            "commit_level_flags": sum(len(p.get("commit_pairs", [])) for p in flagged_pairs),
             "total_file_pairs_compared": sum(
                 len(r["file_pairs"]) for r in comparison_results
             ),
