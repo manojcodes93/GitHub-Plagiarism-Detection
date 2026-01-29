@@ -23,9 +23,10 @@ class GitHubAnalyzer:
 
         repo_name = repo_url.split("/")[-1].replace(".git", "")
         repo_hash = hashlib.md5(repo_url.encode()).hexdigest()[:8]
-        
+
         # Always create a fresh temp directory
-        local_path = tempfile.mkdtemp(prefix=f"{repo_name}_{repo_hash}_")
+        base_tmp = tempfile.mkdtemp(prefix="plagiarism_repo_")
+        local_path = os.path.join(base_tmp, f"{repo_name}_{repo_hash}")
 
         ## Cloning
         try:
