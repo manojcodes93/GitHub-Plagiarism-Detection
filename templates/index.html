@@ -11,10 +11,10 @@
         <!-- Navigation -->
         <nav class="navbar">
             <div class="nav-container">
-                <div class="nav-logo">
+                <a href="#" class="nav-logo" onclick="goHome(event)">
                     <img src="{{ url_for('static', filename='logo.png') }}" alt="CodeMirror Logo" class="logo-image">
                     <span class="logo-text">CodeMirror</span>
-                </div>
+                </a>
                 <ul class="nav-menu">
                     <li><a href="#" class="nav-link">Home</a></li>
                     <li><a href="#" class="nav-link">Dashboard</a></li>
@@ -61,7 +61,7 @@
 
                         <div class="input-group">
                             <label>Branch to Analyze</label>
-                            <input type="text" id="branch" class="form-control" value="main" placeholder="main">
+                            <input type="text" id="branch" class="form-control" value="main" readonly>
                         </div>
 
                         <div class="input-group">
@@ -177,64 +177,81 @@
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
     <script>
-        // Add initial repository inputs
-        function initializeForm() {
-            addRepositoryInput();
-            addRepositoryInput();
-            addRepositoryInput();
+    // Add initial repository inputs
+    function initializeForm() {
+        addRepositoryInput();
+        addRepositoryInput();
+        addRepositoryInput();
+    }
+
+    function addRepositoryInput() {
+        const container = document.getElementById('repositoriesList');
+        const input = document.createElement('div');
+        input.className = 'repo-input';
+        input.innerHTML = `
+            <div class="input-wrapper">
+                <span class="repo-icon">🔗</span>
+                <input type="text" class="repo-url" placeholder="https://github.com/example/repo1">
+                <button type="button" class="btn-remove" onclick="this.parentElement.parentElement.remove()">−</button>
+            </div>
+        `;
+        container.appendChild(input);
+    }
+
+    function scrollToAnalysis() {
+        document.getElementById('mainContainer').style.display = 'block';
+        document.getElementById('analysisSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function scrollToDashboard() {
+        document.getElementById('mainContainer').style.display = 'block';
+        document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 🔽 ADD THIS FUNCTION (only this)
+    function goHome(e) {
+        e.preventDefault();
+
+        // Hide main content
+        document.getElementById('mainContainer').style.display = 'none';
+
+        // Scroll back to hero (home)
+        document.getElementById('heroSection')
+            .scrollIntoView({ behavior: 'smooth' });
+
+        // Reset sections
+        document.getElementById('resultsSection')?.classList.add('hidden');
+        document.getElementById('statusSection')?.classList.add('hidden');
+        document.getElementById('errorSection')?.classList.add('hidden');
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', initializeForm);
+
+    // Threshold slider sync
+    document.getElementById('thresholdSlider').addEventListener('input', (e) => {
+        document.getElementById('thresholdValue').textContent = e.target.value;
+    });
+
+    // Collect repos from form
+    document.getElementById('analyzeForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const repos = Array.from(document.querySelectorAll('.repo-url'))
+            .map(input => input.value.trim())
+            .filter(url => url && url.startsWith('http'));
+
+        if (repos.length < 2) {
+            showError('At least 2 repositories required');
+            return;
         }
 
-        function addRepositoryInput() {
-            const container = document.getElementById('repositoriesList');
-            const input = document.createElement('div');
-            input.className = 'repo-input';
-            input.innerHTML = `
-                <div class="input-wrapper">
-                    <span class="repo-icon">🔗</span>
-                    <input type="text" class="repo-url" placeholder="https://github.com/example/repo1">
-                    <button type="button" class="btn-remove" onclick="this.parentElement.parentElement.remove()">−</button>
-                </div>
-            `;
-            container.appendChild(input);
-        }
+        const language = document.getElementById('language').value;
+        const branch = document.getElementById('branch').value;
+        const threshold = parseFloat(document.getElementById('thresholdSlider').value);
 
-        function scrollToAnalysis() {
-            document.getElementById('mainContainer').style.display = 'block';
-            document.getElementById('analysisSection').scrollIntoView({ behavior: 'smooth' });
-        }
+        await submitAnalysis(repos, language, branch, threshold);
+    });
+</script>
 
-        function scrollToDashboard() {
-            document.getElementById('mainContainer').style.display = 'block';
-            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', initializeForm);
-
-        // Threshold slider sync
-        document.getElementById('thresholdSlider').addEventListener('input', (e) => {
-            document.getElementById('thresholdValue').textContent = e.target.value;
-            document.getElementById('threshold').value = e.target.value;
-        });
-
-        // Collect repos from form
-        document.getElementById('analyzeForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const repos = Array.from(document.querySelectorAll('.repo-url'))
-                .map(input => input.value.trim())
-                .filter(url => url && url.startsWith('http'));
-            
-            if (repos.length < 2) {
-                showError('At least 2 repositories required');
-                return;
-            }
-
-            const language = document.getElementById('language').value;
-            const branch = document.getElementById('branch').value;
-            const threshold = parseFloat(document.getElementById('thresholdSlider').value);
-
-            await submitAnalysis(repos, language, branch, threshold);
-        });
-    </script>
 </body>
 </html>

@@ -882,3 +882,17 @@ body {
 .hidden {
     display: none !important;
 }
+
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.nav-logo:hover {
+  opacity: 0.85;
+}
