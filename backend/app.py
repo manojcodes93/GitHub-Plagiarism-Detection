@@ -191,6 +191,10 @@ def _perform_analysis(
     7. Generate report
     """
     logger.info(f"Starting analysis job {job_id} for {len(repo_urls)} repositories")
+
+    jobs[job_id]["progress"] = 5
+    jobs[job_id]["status"] = "processing"
+    logger.info("Job started, progress set to 5%")
     
     # Step 1: Clone repositories
     cloned_paths = {}
@@ -203,14 +207,27 @@ def _perform_analysis(
         except Exception as e:
             logger.error(f"Failed to clone {url}: {str(e)}")
             raise
+
+    jobs[job_id]["progress"] = 20
     
     # Step 2: Extract source files for target language
     all_files = {}
     for i, (url, path) in enumerate(cloned_paths.items()):
         jobs[job_id]["progress"] = 20 + int((i / len(cloned_paths)) * 20)
         files = git_analyzer.extract_code_files(path, language)
+
+        if not files:
+            logger.warning(f"No {language} files found for {url}")
+            continue
+
+        MAX_FILES = 40
+        files = dict(list(files.items())[:MAX_FILES])
+
         all_files[url] = files
         logger.info(f"Extracted {len(files)} {language} files from {url}")
+
+    if len(all_files) < 2:
+        raise RuntimeError("Not enough repositories with valid source files")
     
     # Step 3: Preprocess code
     preprocessed_files = {}
@@ -224,6 +241,7 @@ def _perform_analysis(
     all_embeddings = {}
     for i, (url, files) in enumerate(preprocessed_files.items()):
         jobs[job_id]["progress"] = 60 + int((i / len(preprocessed_files)) * 15)
+        logger.info(f"Embedding {len(files)} files for {url}")
         embeddings = embedding_generator.embed_code_files(files)
         all_embeddings[url] = embeddings
         logger.info(f"Generated {len(embeddings)} embeddings for {url}")
