@@ -10,11 +10,20 @@ class EmbeddingGenerator:
     def get_model_info(self):
         ## Getting model information.
         return self.model_name
+    
+    def _chunk_code(self, code: str, max_lines: int = 40) -> List[str]:
+        """
+        Split code into chunks of N lines to capture partial plagiarism.
+        """
+        lines = code.split("\n")
+        chunks = []
 
-    def _prepare_text(self, text: str) -> str:
-        ## Preparing the the text by avoiding memory/ token issue
-        max_length = 10000
-        return text[:max_length]
+        for i in range(0, len(lines), max_lines):
+            chunk = "\n".join(lines[i:i + max_lines]).strip()
+            if chunk:
+                chunks.append(chunk)
+        
+        return chunks
 
     def _convert_to_list(self, texts: Union[str, List[str]]) -> List[str]:
         """
@@ -29,11 +38,16 @@ class EmbeddingGenerator:
     def _generate_embeddings(self, texts : List[str]) -> np.ndarray:
         texts = self._convert_to_list(texts)
         ## Generating embeddings using Transformer model
-        return self.model.encode(texts, convert_to_numpy = True, show_progress_bar = False)
+        return self.model.encode(
+            texts, 
+            convert_to_numpy = True, 
+            show_progress_bar = False, 
+            batch_size=16
+        )
     
     
-    def embed_code_files(self, files : Dict[str, str]) -> Dict[str, np.ndarray]:
-        ## Generate embeddings for code files
+    def embed_code_files(self, files: Dict[str, str]) -> Dict[str, np.ndarray]:
+        ## Generate aggregated embeddings for code files using chunking.
         embeddings = {}
 
         for path, content in files.items():
@@ -41,11 +55,16 @@ class EmbeddingGenerator:
             if not content or not content.strip():
                 continue
             
-            prepared_text = self._prepare_text(content)
-            embedding_result = self._generate_embeddings(prepared_text)
-            if len(embedding_result) > 0:
-                # Model returns batch embeddings: (1, embedding_dim) → extract single vector (embedding_dim,)
-                embeddings[path] = embedding_result[0]
+            chunks = self._chunk_code(content)
+
+            if not chunks:
+                continue
+
+            chunk_embeddings = self._generate_embeddings(chunks)
+
+            # Aggregate chunk embeddings (mean pooling)
+            file_embedding = np.mean(chunk_embeddings, axis=0)
+            embeddings[path] = file_embedding
         
         return embeddings
     
@@ -61,7 +80,7 @@ class EmbeddingGenerator:
                 if line.startswith("+") or line.startswith("-"):
                     relevant_lines.append(line)
             
-            trimmed_diff = self._prepare_text("\n".join(relevant_lines[:100]))
+            trimmed_diff = "\n".join(relevant_lines[:100])
             processed_diffs.append(trimmed_diff)
 
         return self._generate_embeddings(processed_diffs)
