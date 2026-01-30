@@ -429,6 +429,40 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeModal();
 });
 
+// Navigation functions
+function scrollToAnalysis() {
+  document.getElementById("mainContainer").style.display = "block";
+  document
+    .getElementById("analysisSection")
+    .scrollIntoView({ behavior: "smooth" });
+}
+
+function scrollToDashboard() {
+  document.getElementById("mainContainer").style.display = "block";
+  document
+    .getElementById("resultsSection")
+    .scrollIntoView({ behavior: "smooth" });
+}
+
+function goHome(e) {
+  if (e) e.preventDefault();
+
+  // Hide main content
+  document.getElementById("mainContainer").style.display = "none";
+
+  // Scroll back to hero (home)
+  document.getElementById("heroSection").scrollIntoView({ behavior: "smooth" });
+
+  // Reset sections
+  const rs = document.getElementById("resultsSection");
+  const ss = document.getElementById("statusSection");
+  const es = document.getElementById("errorSection");
+
+  if (rs) rs.classList.add("hidden");
+  if (ss) ss.classList.add("hidden");
+  if (es) es.classList.add("hidden");
+}
+
 console.log("CodeMirror UI loaded");
 
 // Poll for results

@@ -15,22 +15,65 @@ class GitHubAnalyzer:
         self.cloned_paths = []
     
     def clone_repository(self, repo_url: str, branch: str = "main") -> str:
+        import stat
+        
         repo_name = repo_url.split("/")[-1].replace(".git", "")
         repo_hash = hashlib.md5(repo_url.encode()).hexdigest()[:8]
 
-        # Create a UNIQUE temp directory every time
-        base_tmp = tempfile.mkdtemp(prefix="plagiarism_repo_")
-        local_path = os.path.join(base_tmp, f"{repo_name}_{repo_hash}")
+        # Use mkdtemp directly with a unique prefix; this ensures isolation
+        # Windows-safe: use full temp directory as clone target
+        local_path = tempfile.mkdtemp(prefix=f"plagiarism_{repo_name}_{repo_hash}_")
 
-        # ✅ SAFETY: remove folder if it somehow exists (Windows edge-case)
-        if os.path.exists(local_path):
-            shutil.rmtree(local_path, ignore_errors=True)
+        # Robust cleanup of any stale content (Windows file lock handling)
+        def force_remove_tree(path):
+            """Remove tree with Windows file lock handling."""
+            if not os.path.exists(path):
+                return
+            for root, dirs, files in os.walk(path, topdown=False):
+                for name in files:
+                    try:
+                        file_path = os.path.join(root, name)
+                        os.chmod(file_path, stat.S_IWUSR | stat.S_IRUSR)
+                        os.remove(file_path)
+                    except Exception:
+                        pass
+                for name in dirs:
+                    try:
+                        dir_path = os.path.join(root, name)
+                        os.chmod(dir_path, stat.S_IWUSR | stat.S_IRUSR)
+                        os.rmdir(dir_path)
+                    except Exception:
+                        pass
+            try:
+                os.rmdir(path)
+            except Exception:
+                pass
+
+        # Attempt to clean the directory if it has remnants
+        try:
+            if os.path.exists(local_path) and os.listdir(local_path):
+                force_remove_tree(local_path)
+                # Recreate empty directory
+                os.makedirs(local_path, exist_ok=True)
+        except Exception as e:
+            # If cleanup fails, use a new unique path
+            import uuid
+            local_path = os.path.join(tempfile.gettempdir(), f"plagiarism_repo_{uuid.uuid4().hex[:8]}")
+            os.makedirs(local_path, exist_ok=True)
 
         try:
             Repo.clone_from(repo_url, local_path, branch=branch, depth=50)
-        except Exception:
+        except Exception as e:
             # Fallback for repos using 'master'
-            Repo.clone_from(repo_url, local_path, branch="master", depth=50)
+            try:
+                Repo.clone_from(repo_url, local_path, branch="master", depth=50)
+            except Exception as fallback_error:
+                # Clean up on full failure
+                try:
+                    force_remove_tree(local_path)
+                except Exception:
+                    pass
+                raise fallback_error
 
         self.cloned_paths.append(local_path)
         return local_path
@@ -133,19 +176,40 @@ class GitHubAnalyzer:
             shutil.rmtree(path, onerror=onerror)
     
     def clean_up(self):
-        ## Removing all the cloned repos
+        ## Removing all the cloned repos with robust Windows handling
         import stat
 
-        def handle_remove_error(func, path, exc_info):
-            """Error handler for shutil.rmtree on Windows with locked files."""
-            if not os.access(path, os.W_OK):
-                os.chmod(path, stat.S_IWUSR | stat.S_IRUSR)
-                func(path)
-            else:
-                raise
+        def force_remove_tree(path):
+            """Remove tree with Windows file lock handling."""
+            if not os.path.exists(path):
+                return
+            for root, dirs, files in os.walk(path, topdown=False):
+                for name in files:
+                    try:
+                        file_path = os.path.join(root, name)
+                        os.chmod(file_path, stat.S_IWUSR | stat.S_IRUSR)
+                        os.remove(file_path)
+                    except Exception:
+                        pass
+                for name in dirs:
+                    try:
+                        dir_path = os.path.join(root, name)
+                        os.chmod(dir_path, stat.S_IWUSR | stat.S_IRUSR)
+                        os.rmdir(dir_path)
+                    except Exception:
+                        pass
+            try:
+                os.rmdir(path)
+            except Exception:
+                pass
 
         for path in self.cloned_paths:
             if os.path.exists(path):
-                shutil.rmtree(path, onerror=handle_remove_error)
+                try:
+                    force_remove_tree(path)
+                except Exception as e:
+                    # Log but don't fail on cleanup errors
+                    import logging
+                    logging.warning(f"Failed to clean up {path}: {e}")
 
         self.cloned_paths = []

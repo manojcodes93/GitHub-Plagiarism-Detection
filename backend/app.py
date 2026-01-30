@@ -109,27 +109,31 @@ def analyze():
             "results": None,
         }
         
-        # Process analysis in background (synchronously for now)
-        try:
-            def run_analysis():
-                try:
-                    results = _perform_analysis(repos, language, branch, threshold, job_id)
-                    jobs[job_id]["status"] = "completed"
-                    jobs[job_id]["results"] = results
-                    jobs[job_id]["progress"] = 100
+        # Process analysis in background thread with comprehensive error handling
+        def run_analysis():
+            """Run analysis with guaranteed state transitions and error capture."""
+            try:
+                results = _perform_analysis(repos, language, branch, threshold, job_id)
+                jobs[job_id]["status"] = "completed"
+                jobs[job_id]["results"] = results
+                jobs[job_id]["progress"] = 100
+                logger.info(f"Job {job_id} completed successfully")
+            
+            except Exception as e:
+                logger.error(f"Analysis failed for job {job_id}: {str(e)}", exc_info=True)
+                jobs[job_id]["status"] = "failed"
+                jobs[job_id]["error"] = str(e)
+                jobs[job_id]["progress"] = 0  # Reset to terminal state
                 
-                except Exception as e:
-                    logger.error(f"Analysis failed: {str(e)}")
-                    jobs[job_id]["status"] = "failed"
-                    jobs[job_id]["error"] = str(e)
-                    
-            thread = threading.Thread(target=run_analysis, daemon=True)
-            thread.start()
-
-        except Exception as e:
-            logger.error(f"Analysis failed: {str(e)}")
-            jobs[job_id]["status"] = "failed"
-            jobs[job_id]["error"] = str(e)
+                # Ensure cleanup on failure
+                try:
+                    git_analyzer.clean_up()
+                except Exception as cleanup_err:
+                    logger.warning(f"Cleanup failed: {cleanup_err}")
+        
+        # Start thread (daemon=False to ensure proper shutdown)
+        thread = threading.Thread(target=run_analysis, daemon=False)
+        thread.start()
         
         return jsonify({
             "job_id": job_id,
@@ -183,215 +187,317 @@ def _perform_analysis(
     job_id: str
 ) -> dict:
     """
-    Perform full plagiarism analysis.
+    Perform full plagiarism analysis with guaranteed repository lifecycle.
     
-    LLM-first pipeline:
+    Pipeline:
     1. Clone repos
-    2. Extract source files
-    3. Preprocess code
-    4. Generate embeddings
-    5. Compute similarity
-    6. LLM reasoning
-    7. Generate report
+    2. Extract commits (cached in memory)
+    3. Extract source files
+    4. Preprocess code
+    5. Generate embeddings
+    6. Delete cloned repos (repos no longer needed)
+    7. Compute similarity using embeddings
+    8. Perform commit-level analysis using cached commit data
+    9. LLM reasoning
+    10. Generate report
     """
     logger.info(f"Starting analysis job {job_id} for {len(repo_urls)} repositories (candidate + references)")
 
-    jobs[job_id]["progress"] = 5
-    jobs[job_id]["status"] = "processing"
-    logger.info("Job started, progress set to 5%")
+    jobs[job_id]["status"] = "running"
+    jobs[job_id]["progress"] = 1
     
-    # Step 1: Clone repositories
     cloned_paths = {}
-    for i, url in enumerate(repo_urls):
-        jobs[job_id]["progress"] = int((i / len(repo_urls)) * 20)
+    all_commits = {}  # Cache commits before deletion
+    
+    try:
+        # Step 1: Clone repositories
+        logger.info("Step 1: Cloning repositories...")
+        for i, url in enumerate(repo_urls):
+            jobs[job_id]["progress"] = int(5 + (i / len(repo_urls)) * 10)
+            try:
+                path = git_analyzer.clone_repository(url, branch)
+                cloned_paths[url] = path
+                logger.info(f"Cloned {url} to {path}")
+            except Exception as e:
+                logger.error(f"Failed to clone {url}: {str(e)}")
+                raise RuntimeError(f"Clone failed for {url}: {str(e)}")
+
+        # Step 2: Extract and cache commits BEFORE deletion
+        logger.info("Step 2: Extracting commits from all repositories...")
+        for i, url in enumerate(repo_urls):
+            jobs[job_id]["progress"] = int(15 + (i / len(repo_urls)) * 5)
+            try:
+                if url not in cloned_paths:
+                    logger.warning(f"Skipping commits for {url}: not cloned")
+                    all_commits[url] = []
+                    continue
+                
+                commits = git_analyzer.extract_commits(cloned_paths[url], limit=50)
+                if not commits:
+                    logger.warning(f"No commits found for {url}")
+                    commits = []
+                
+                all_commits[url] = commits
+                logger.info(f"Extracted {len(commits)} commits from {url}")
+            except Exception as e:
+                logger.warning(f"Failed to extract commits for {url}: {str(e)}")
+                all_commits[url] = []  # Continue with empty commits
+        
+        # Step 3: Extract source files for target language
+        logger.info("Step 3: Extracting source code files...")
+        all_files = {}
+        for i, url in enumerate(cloned_paths.items()):
+            jobs[job_id]["progress"] = int(20 + (i / len(cloned_paths)) * 10)
+            url_key, path = url
+            try:
+                files = git_analyzer.extract_code_files(path, language)
+                if not files:
+                    logger.warning(f"No {language} files found for {url_key}")
+                    continue
+
+                MAX_FILES = 40
+                files = dict(list(files.items())[:MAX_FILES])
+                all_files[url_key] = files
+                logger.info(f"Extracted {len(files)} {language} files from {url_key}")
+            except Exception as e:
+                logger.error(f"Failed to extract files from {url_key}: {str(e)}")
+                raise RuntimeError(f"File extraction failed for {url_key}: {str(e)}")
+
+        if len(all_files) < 2:
+            raise RuntimeError("Not enough repositories with valid source files")
+        
+        # Step 4: Preprocess code
+        logger.info("Step 4: Preprocessing code...")
+        preprocessed_files = {}
+        for i, (url, files) in enumerate(all_files.items()):
+            jobs[job_id]["progress"] = int(30 + (i / len(all_files)) * 10)
+            try:
+                preprocessed = CodePreprocessor.preprocess_files(files, language, aggressive=True)
+                preprocessed_files[url] = preprocessed
+                logger.info(f"Preprocessed {len(preprocessed)} files from {url}")
+            except Exception as e:
+                logger.error(f"Preprocessing failed for {url}: {str(e)}")
+                raise RuntimeError(f"Preprocessing failed for {url}: {str(e)}")
+        
+        # Step 5: Generate embeddings
+        logger.info("Step 5: Generating embeddings...")
+        all_embeddings = {}
+        for i, (url, files) in enumerate(preprocessed_files.items()):
+            jobs[job_id]["progress"] = int(40 + (i / len(preprocessed_files)) * 20)
+            try:
+                if not files:
+                    logger.warning(f"No files to embed for {url}")
+                    all_embeddings[url] = {}
+                    continue
+                
+                logger.info(f"Embedding {len(files)} files for {url}")
+                embeddings = embedding_generator.embed_code_files(files)
+                
+                if not embeddings:
+                    logger.warning(f"No embeddings generated for {url}")
+                    embeddings = {}
+                
+                all_embeddings[url] = embeddings
+                logger.info(f"Generated {len(embeddings)} embeddings for {url}")
+            except Exception as e:
+                logger.error(f"Embedding failed for {url}: {str(e)}")
+                raise RuntimeError(f"Embedding failed for {url}: {str(e)}")
+
+        # Step 6: Delete cloned repositories (all data extracted and cached)
+        logger.info("Step 6: Cleaning up cloned repositories...")
+        jobs[job_id]["progress"] = 60
         try:
-            path = git_analyzer.clone_repository(url, branch)
-            cloned_paths[url] = path
-            logger.info(f"Cloned {url}")
+            git_analyzer.clean_up()
+            logger.info("Cloned repositories cleaned up successfully")
         except Exception as e:
-            logger.error(f"Failed to clone {url}: {str(e)}")
-            raise
+            logger.warning(f"Cleanup incomplete: {str(e)}")
+            # Continue anyway; data is already cached
+        
+        # Step 7: Compute similarity between candidate -> each reference
+        logger.info("Step 7: Computing file-level similarity...")
+        jobs[job_id]["progress"] = 65
+        comparison_results = []
+        repo_list = list(all_embeddings.keys())
 
-    jobs[job_id]["progress"] = 20
+        # Candidate is the first repo
+        candidate_url = repo_urls[0]
+        if candidate_url not in all_embeddings:
+            raise RuntimeError(f"Candidate {candidate_url} has no files in selected language")
+
+        reference_urls = [u for u in repo_urls[1:] if u in all_embeddings]
+        if not reference_urls:
+            raise RuntimeError("No reference repositories with valid source files")
+
+        for idx, ref_url in enumerate(reference_urls):
+            jobs[job_id]["progress"] = int(65 + (idx / max(1, len(reference_urls))) * 10)
+
+            try:
+                # Defensive: ensure embeddings exist
+                if not all_embeddings.get(candidate_url) or not all_embeddings.get(ref_url):
+                    logger.warning(f"Skipping comparison: missing embeddings for {candidate_url} or {ref_url}")
+                    continue
+
+                # Compare files
+                file_comparisons = similarity_analyzer.compare_files(
+                    all_embeddings[candidate_url],
+                    all_embeddings[ref_url],
+                    preprocessed_files[candidate_url],
+                    preprocessed_files[ref_url],
+                    threshold
+                )
+
+                # Compute repo similarity
+                repo_similarity = similarity_analyzer.compute_repository_similarity(
+                    all_embeddings[candidate_url],
+                    all_embeddings[ref_url]
+                )
+                
+                logger.info(f"Repo similarity {candidate_url} → {ref_url}: {repo_similarity:.3f}")
+
+                # Step 8: Commit-level analysis using CACHED commit data
+                commit_flags = []
+                try:
+                    candidate_commits = all_commits.get(candidate_url, [])
+                    ref_commits = all_commits.get(ref_url, [])
+
+                    if not candidate_commits or not ref_commits:
+                        logger.debug(f"Skipping commit analysis: insufficient commit data")
+                    else:
+                        # Extract commit diffs on-demand (but we have commit metadata)
+                        cand_diff_texts = []
+                        ref_diff_texts = []
+                        
+                        for c in candidate_commits[:10]:  # Limit to 10
+                            msg = c.get('message', '').strip()
+                            if msg:
+                                cand_diff_texts.append(msg)
+                        
+                        for r in ref_commits[:10]:  # Limit to 10
+                            msg = r.get('message', '').strip()
+                            if msg:
+                                ref_diff_texts.append(msg)
+
+                        if cand_diff_texts and ref_diff_texts:
+                            # Lightweight commit message analysis (not full diffs)
+                            cand_emb = embedding_generator.embed_commit_diffs(cand_diff_texts)
+                            ref_emb = embedding_generator.embed_commit_diffs(ref_diff_texts)
+
+                            if cand_emb is not None and ref_emb is not None and len(cand_emb) > 0 and len(ref_emb) > 0:
+                                for i_c, ce in enumerate(cand_emb):
+                                    best = 0.0
+                                    for re in ref_emb:
+                                        sim = similarity_analyzer.cosine_similarity(ce, re)
+                                        best = max(best, sim)
+
+                                    if best >= 0.85:
+                                        commit_flags.append({
+                                            "candidate_commit_index": i_c,
+                                            "best_similarity": best,
+                                            "reason": "High commit message similarity"
+                                        })
+
+                        # Check for identical commit messages
+                        for c in candidate_commits[:20]:
+                            for r in ref_commits[:20]:
+                                c_msg = c.get('message', '').strip()
+                                r_msg = r.get('message', '').strip()
+                                if c_msg and c_msg == r_msg:
+                                    commit_flags.append({
+                                        "candidate_commit": c.get('hash', 'unknown'),
+                                        "reference_commit": r.get('hash', 'unknown'),
+                                        "reason": "Identical commit messages"
+                                    })
+
+                except Exception as e:
+                    logger.debug(f"Commit-level checks skipped: {e}")
+
+                comparison_results.append({
+                    "candidate": candidate_url,
+                    "reference": ref_url,
+                    "repo_similarity": float(repo_similarity),
+                    "file_pairs": file_comparisons,
+                    "commit_flags": commit_flags,
+                    "suspicious": float(repo_similarity) > threshold or bool(commit_flags)
+                })
+                
+            except Exception as e:
+                logger.error(f"Comparison failed for {ref_url}: {str(e)}")
+                raise RuntimeError(f"Comparison failed: {str(e)}")
+        
+        # Step 9: LLM reasoning on flagged references
+        logger.info("Step 9: Performing LLM-based reasoning...")
+        jobs[job_id]["progress"] = 80
+        flagged_refs = [r for r in comparison_results if r["suspicious"]]
+
+        for pair in flagged_refs:
+            try:
+                # Defensive: ensure file pairs exist
+                file_pairs_to_judge = pair.get("file_pairs", [])
+                if not file_pairs_to_judge:
+                    logger.debug(f"No file pairs to judge for {pair['reference']}")
+                    pair["file_judgments"] = []
+                    pair["explanation"] = "No similar files detected for detailed analysis"
+                    continue
+
+                judgments = llm_reasoner.batch_judge_files(file_pairs_to_judge[:5])
+                pair["file_judgments"] = judgments
+                pair["explanation"] = llm_reasoner.generate_plagiarism_explanation(
+                    pair["candidate"].split("/")[-1],
+                    pair["reference"].split("/")[-1],
+                    file_pairs_to_judge,
+                    pair["repo_similarity"]
+                )
+            except Exception as e:
+                logger.warning(f"LLM reasoning failed: {str(e)}")
+                pair["file_judgments"] = []
+                pair["explanation"] = f"Analysis unavailable: {str(e)}"
+        
+        # Step 10: Generate final report
+        logger.info("Step 10: Generating report...")
+        jobs[job_id]["progress"] = 95
+        
+        max_similarity = max((r['repo_similarity'] for r in comparison_results), default=0.0)
+        overall_confidence = min(0.95, float(max_similarity) + 0.05)
+        verdict = "No plagiarism detected" if float(max_similarity) < threshold else "Potential plagiarism detected"
+
+        report = {
+            "job_id": job_id,
+            "timestamp": datetime.now().isoformat(),
+            "parameters": {
+                "candidate": repo_urls[0],
+                "references": repo_urls[1:],
+                "language": language,
+                "branch": branch,
+                "threshold": threshold,
+            },
+            "summary": {
+                "candidate": repo_urls[0],
+                "total_references": len(reference_urls),
+                "suspicious_references": len([r for r in comparison_results if r['suspicious']]),
+                "total_file_pairs_compared": sum(len(r['file_pairs']) for r in comparison_results),
+            },
+            "verdict": verdict,
+            "confidence": float(overall_confidence),
+            "comparisons": comparison_results,
+        }
+        
+        # Save report
+        _save_report(report)
+        
+        jobs[job_id]["progress"] = 100
+        logger.info(f"Analysis complete for job {job_id}: {verdict}")
+        
+        return report
     
-    # Step 2: Extract source files for target language
-    all_files = {}
-    for i, (url, path) in enumerate(cloned_paths.items()):
-        jobs[job_id]["progress"] = 20 + int((i / len(cloned_paths)) * 20)
-        files = git_analyzer.extract_code_files(path, language)
-
-        if not files:
-            logger.warning(f"No {language} files found for {url}")
-            continue
-
-        MAX_FILES = 40
-        files = dict(list(files.items())[:MAX_FILES])
-
-        all_files[url] = files
-        logger.info(f"Extracted {len(files)} {language} files from {url}")
-
-    if len(all_files) < 2:
-        raise RuntimeError("Not enough repositories with valid source files")
-    
-    # Step 3: Preprocess code
-    preprocessed_files = {}
-    for i, (url, files) in enumerate(all_files.items()):
-        jobs[job_id]["progress"] = 40 + int((i / len(all_files)) * 20)
-        preprocessed = CodePreprocessor.preprocess_files(files, language, aggressive=True)
-        preprocessed_files[url] = preprocessed
-        logger.info(f"Preprocessed {len(preprocessed)} files from {url}")
-    
-    # Step 4: Generate embeddings
-    all_embeddings = {}
-    for i, (url, files) in enumerate(preprocessed_files.items()):
-        jobs[job_id]["progress"] = 60 + int((i / len(preprocessed_files)) * 15)
-        logger.info(f"Embedding {len(files)} files for {url}")
-        embeddings = embedding_generator.embed_code_files(files)
-        all_embeddings[url] = embeddings
-        logger.info(f"Generated {len(embeddings)} embeddings for {url}")
-
+    except Exception as e:
+        logger.error(f"Critical analysis error: {str(e)}", exc_info=True)
+        # Ensure cleanup on error
         try:
-            git_analyzer.delete_repo(cloned_paths[url])
-            logger.info(f"Deleted cloned repo for {url}")
-        except Exception as e:
-            logger.warning(f"Failed to delete repo {url}: {e}")
-    
-    # Step 5: Compute similarity only between candidate -> each reference (one-to-many)
-    jobs[job_id]["progress"] = 75
-    comparison_results = []
-    repo_list = list(all_embeddings.keys())
-
-    # Candidate is the first repo in the original request order
-    candidate_url = repo_urls[0]
-    if candidate_url not in all_embeddings:
-        raise RuntimeError("Candidate repository has no files in selected language")
-
-    reference_urls = [u for u in repo_urls[1:] if u in all_embeddings]
-    if not reference_urls:
-        raise RuntimeError("No reference repositories with valid source files found")
-
-    for idx, ref_url in enumerate(reference_urls):
-        jobs[job_id]["progress"] = 75 + int((idx / max(1, len(reference_urls))) * 10)
-
-        # Compare files (candidate -> reference)
-        file_comparisons = similarity_analyzer.compare_files(
-            all_embeddings[candidate_url],
-            all_embeddings[ref_url],
-            preprocessed_files[candidate_url],
-            preprocessed_files[ref_url],
-            threshold
-        )
-
-        # Compute repo similarity (how closely reference matches candidate)
-        repo_similarity = similarity_analyzer.compute_repository_similarity(
-            all_embeddings[candidate_url],
-            all_embeddings[ref_url]
-        )
-
-        # Commit-level quick checks: compare recent commit diffs/messages
-        commit_flags = []
-        try:
-            candidate_commits = git_analyzer.extract_commits(cloned_paths[candidate_url], limit=50)
-            ref_commits = git_analyzer.extract_commits(cloned_paths[ref_url], limit=50)
-
-            # Embedded diffs for candidate and ref (keep small to limit cost)
-            cand_diffs = [git_analyzer.extract_commit_diff(cloned_paths[candidate_url], c['hash'], language) for c in candidate_commits[:20]]
-            ref_diffs = [git_analyzer.extract_commit_diff(cloned_paths[ref_url], c['hash'], language) for c in ref_commits[:20]]
-
-            # Flatten diffs text lists
-            cand_diff_texts = ["\n".join(d.values()) for d in cand_diffs if d]
-            ref_diff_texts = ["\n".join(d.values()) for d in ref_diffs if d]
-
-            if cand_diff_texts and ref_diff_texts:
-                cand_emb = embedding_generator.embed_commit_diffs(cand_diff_texts)
-                ref_emb = embedding_generator.embed_commit_diffs(ref_diff_texts)
-
-                # Compare commit embeddings for suspicious similarities
-                for i_c, ce in enumerate(cand_emb):
-                    best = 0.0
-                    for re in ref_emb:
-                        sim = similarity_analyzer.cosine_similarity(ce, re)
-                        best = max(best, sim)
-
-                    if best >= 0.9:
-                        commit_flags.append({
-                            "candidate_commit_index": i_c,
-                            "best_similarity": best,
-                            "reason": "High commit-diff similarity"
-                        })
-
-            # Also check identical commit messages for quick signal
-            for c in candidate_commits[:20]:
-                for r in ref_commits[:20]:
-                    if c['message'].strip() and c['message'].strip() == r['message'].strip():
-                        commit_flags.append({
-                            "candidate_commit": c['hash'],
-                            "reference_commit": r['hash'],
-                            "reason": "Identical commit messages"
-                        })
-
-        except Exception as e:
-            logger.debug(f"Commit-level checks skipped for {ref_url}: {e}")
-
-        comparison_results.append({
-            "candidate": candidate_url,
-            "reference": ref_url,
-            "repo_similarity": repo_similarity,
-            "file_pairs": file_comparisons,
-            "commit_flags": commit_flags,
-            "suspicious": repo_similarity > threshold or bool(commit_flags)
-        })
-    
-    # Step 6: LLM reasoning on flagged references (candidate vs each reference)
-    jobs[job_id]["progress"] = 85
-    flagged_refs = [r for r in comparison_results if r["suspicious"]]
-
-    for pair in flagged_refs:
-        # Add LLM judgment (limit to top 5 file pairs for brevity)
-        judgments = llm_reasoner.batch_judge_files(pair["file_pairs"][:5])
-        pair["file_judgments"] = judgments
-        pair["explanation"] = llm_reasoner.generate_plagiarism_explanation(
-            pair["candidate"].split("/")[-1],
-            pair["reference"].split("/")[-1],
-            pair["file_pairs"],
-            pair["repo_similarity"]
-        )
-    
-    # Step 7: Generate report
-    jobs[job_id]["progress"] = 95
-    # Aggregate final verdict for candidate repository
-    max_similarity = max((r['repo_similarity'] for r in comparison_results), default=0.0)
-    overall_confidence = min(0.95, max_similarity + 0.05)
-    verdict = "No plagiarism detected" if max_similarity < threshold else "Potential plagiarism detected"
-
-    report = {
-        "job_id": job_id,
-        "timestamp": datetime.now().isoformat(),
-        "parameters": {
-            "candidate": repo_urls[0],
-            "references": repo_urls[1:],
-            "language": language,
-            "branch": branch,
-            "threshold": threshold,
-        },
-        "summary": {
-            "candidate": repo_urls[0],
-            "total_references": len(reference_urls),
-            "suspicious_references": len([r for r in comparison_results if r['suspicious']]),
-            "total_file_pairs_compared": sum(len(r['file_pairs']) for r in comparison_results),
-        },
-        "verdict": verdict,
-        "confidence": overall_confidence,
-        "comparisons": comparison_results,
-    }
-    
-    # Save report
-    _save_report(report)
-    
-    jobs[job_id]["progress"] = 100
-    logger.info(f"Analysis complete for job {job_id}")
-    
-    return report
+            git_analyzer.clean_up()
+        except Exception:
+            pass
+        # Re-raise to be caught by run_analysis()
+        raise
 
 
 def _build_similarity_matrix(comparisons: list, repo_list: list) -> list:
@@ -481,4 +587,5 @@ if __name__ == "__main__":
         logger.error("Failed to start: Missing dependencies")
         exit(1)
     
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5000, use_reloader=False)
+
