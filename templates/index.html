@@ -23,10 +23,24 @@
             <span class="logo-text">CodeMirror</span>
           </a>
           <ul class="nav-menu">
-            <li><a href="#" class="nav-link">Home</a></li>
-            <li><a href="#" class="nav-link">Dashboard</a></li>
-            <li><a href="#" class="nav-link">Analysis</a></li>
-            <li><a href="#" class="nav-link">Reports</a></li>
+            <li>
+              <a href="#" class="nav-link" onclick="goHome(event)">Home</a>
+            </li>
+            <li>
+              <a href="#" class="nav-link" onclick="scrollToDashboard()"
+                >Dashboard</a
+              >
+            </li>
+            <li>
+              <a href="#" class="nav-link" onclick="scrollToAnalysis()"
+                >Analysis</a
+              >
+            </li>
+            <li>
+              <a href="#" class="nav-link" onclick="scrollToDashboard()"
+                >Reports</a
+              >
+            </li>
           </ul>
         </div>
       </nav>
@@ -260,6 +274,11 @@
             </div>
         `;
         container.appendChild(input);
+      }
+
+      // Wrapper function for button onclick (calls addReferenceInput)
+      function addRepositoryInput() {
+        addReferenceInput();
       }
 
       document.addEventListener("DOMContentLoaded", initializeForm);
