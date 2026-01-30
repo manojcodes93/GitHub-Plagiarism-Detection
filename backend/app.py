@@ -13,6 +13,9 @@ from pathlib import Path
 from flask import Flask, render_template, request, jsonify
 import numpy as np
 
+
+
+
 # Import analyzer modules
 from analyzer.github import GitHubAnalyzer
 from analyzer.preprocess import CodePreprocessor
@@ -80,11 +83,13 @@ def analyze():
         branch = data.get("branch", "main")
         threshold = float(data.get("threshold", 0.75))
         
-        if not repos or len(repos) < 2:
-            return jsonify({"error": "At least 2 repositories required"}), 400
+        # Expect first repo to be the candidate, remaining to be references
+        if not repos or len(repos) < 3:
+            return jsonify({"error": "Provide candidate repo (first) and at least 2 reference repositories"}), 400
         
-        if len(repos) > 10:
-            return jsonify({"error": "Maximum 10 repositories allowed"}), 400
+        # Allow up to 10 reference repos (candidate + up to 10 references)
+        if len(repos) - 1 > 10:
+            return jsonify({"error": "Maximum 10 reference repositories allowed"}), 400
         
         if not 0 <= threshold <= 1:
             return jsonify({"error": "Threshold must be between 0 and 1"}), 400
@@ -189,7 +194,7 @@ def _perform_analysis(
     6. LLM reasoning
     7. Generate report
     """
-    logger.info(f"Starting analysis job {job_id} for {len(repo_urls)} repositories")
+    logger.info(f"Starting analysis job {job_id} for {len(repo_urls)} repositories (candidate + references)")
 
     jobs[job_id]["progress"] = 5
     jobs[job_id]["status"] = "processing"
@@ -251,82 +256,133 @@ def _perform_analysis(
         except Exception as e:
             logger.warning(f"Failed to delete repo {url}: {e}")
     
-    # Step 5: Compute similarity between all repository pairs
+    # Step 5: Compute similarity only between candidate -> each reference (one-to-many)
     jobs[job_id]["progress"] = 75
     comparison_results = []
-    repo_list = list(all_embeddings.keys())    
-    for i, url1 in enumerate(repo_list):
-        for j, url2 in enumerate(repo_list):
-            if i >= j:
-                continue
+    repo_list = list(all_embeddings.keys())
 
-            if not preprocessed_files.get(url1) or not preprocessed_files.get(url2):
-                continue
-            
-            # Compare files
-            file_comparisons = similarity_analyzer.compare_files(
-                all_embeddings[url1],
-                all_embeddings[url2],
-                preprocessed_files[url1],
-                preprocessed_files[url2],
-                threshold
-            )
-            
-            # Compute repo similarity
-            repo_similarity = similarity_analyzer.compute_repository_similarity(
-                all_embeddings[url1],
-                all_embeddings[url2]
-            )
-            
-            comparison_results.append({
-                "repo1": url1,
-                "repo2": url2,
-                "repo_similarity": repo_similarity,
-                "file_pairs": file_comparisons,
-                "commit_pairs": [],
-                "suspicious_pair": repo_similarity > threshold,
-            })
+    # Candidate is the first repo in the original request order
+    candidate_url = repo_urls[0]
+    if candidate_url not in all_embeddings:
+        raise RuntimeError("Candidate repository has no files in selected language")
+
+    reference_urls = [u for u in repo_urls[1:] if u in all_embeddings]
+    if not reference_urls:
+        raise RuntimeError("No reference repositories with valid source files found")
+
+    for idx, ref_url in enumerate(reference_urls):
+        jobs[job_id]["progress"] = 75 + int((idx / max(1, len(reference_urls))) * 10)
+
+        # Compare files (candidate -> reference)
+        file_comparisons = similarity_analyzer.compare_files(
+            all_embeddings[candidate_url],
+            all_embeddings[ref_url],
+            preprocessed_files[candidate_url],
+            preprocessed_files[ref_url],
+            threshold
+        )
+
+        # Compute repo similarity (how closely reference matches candidate)
+        repo_similarity = similarity_analyzer.compute_repository_similarity(
+            all_embeddings[candidate_url],
+            all_embeddings[ref_url]
+        )
+
+        # Commit-level quick checks: compare recent commit diffs/messages
+        commit_flags = []
+        try:
+            candidate_commits = git_analyzer.extract_commits(cloned_paths[candidate_url], limit=50)
+            ref_commits = git_analyzer.extract_commits(cloned_paths[ref_url], limit=50)
+
+            # Embedded diffs for candidate and ref (keep small to limit cost)
+            cand_diffs = [git_analyzer.extract_commit_diff(cloned_paths[candidate_url], c['hash'], language) for c in candidate_commits[:20]]
+            ref_diffs = [git_analyzer.extract_commit_diff(cloned_paths[ref_url], c['hash'], language) for c in ref_commits[:20]]
+
+            # Flatten diffs text lists
+            cand_diff_texts = ["\n".join(d.values()) for d in cand_diffs if d]
+            ref_diff_texts = ["\n".join(d.values()) for d in ref_diffs if d]
+
+            if cand_diff_texts and ref_diff_texts:
+                cand_emb = embedding_generator.embed_commit_diffs(cand_diff_texts)
+                ref_emb = embedding_generator.embed_commit_diffs(ref_diff_texts)
+
+                # Compare commit embeddings for suspicious similarities
+                for i_c, ce in enumerate(cand_emb):
+                    best = 0.0
+                    for re in ref_emb:
+                        sim = similarity_analyzer.cosine_similarity(ce, re)
+                        best = max(best, sim)
+
+                    if best >= 0.9:
+                        commit_flags.append({
+                            "candidate_commit_index": i_c,
+                            "best_similarity": best,
+                            "reason": "High commit-diff similarity"
+                        })
+
+            # Also check identical commit messages for quick signal
+            for c in candidate_commits[:20]:
+                for r in ref_commits[:20]:
+                    if c['message'].strip() and c['message'].strip() == r['message'].strip():
+                        commit_flags.append({
+                            "candidate_commit": c['hash'],
+                            "reference_commit": r['hash'],
+                            "reason": "Identical commit messages"
+                        })
+
+        except Exception as e:
+            logger.debug(f"Commit-level checks skipped for {ref_url}: {e}")
+
+        comparison_results.append({
+            "candidate": candidate_url,
+            "reference": ref_url,
+            "repo_similarity": repo_similarity,
+            "file_pairs": file_comparisons,
+            "commit_flags": commit_flags,
+            "suspicious": repo_similarity > threshold or bool(commit_flags)
+        })
     
-    # Step 6: LLM reasoning on flagged pairs
+    # Step 6: LLM reasoning on flagged references (candidate vs each reference)
     jobs[job_id]["progress"] = 85
-    flagged_pairs = [r for r in comparison_results if r["suspicious_pair"]]
-    
-    for pair in flagged_pairs:
-        # Add LLM judgment
+    flagged_refs = [r for r in comparison_results if r["suspicious"]]
+
+    for pair in flagged_refs:
+        # Add LLM judgment (limit to top 5 file pairs for brevity)
         judgments = llm_reasoner.batch_judge_files(pair["file_pairs"][:5])
         pair["file_judgments"] = judgments
         pair["explanation"] = llm_reasoner.generate_plagiarism_explanation(
-            pair["repo1"].split("/")[-1],
-            pair["repo2"].split("/")[-1],
+            pair["candidate"].split("/")[-1],
+            pair["reference"].split("/")[-1],
             pair["file_pairs"],
             pair["repo_similarity"]
         )
     
     # Step 7: Generate report
     jobs[job_id]["progress"] = 95
+    # Aggregate final verdict for candidate repository
+    max_similarity = max((r['repo_similarity'] for r in comparison_results), default=0.0)
+    overall_confidence = min(0.95, max_similarity + 0.05)
+    verdict = "No plagiarism detected" if max_similarity < threshold else "Potential plagiarism detected"
+
     report = {
         "job_id": job_id,
         "timestamp": datetime.now().isoformat(),
         "parameters": {
-            "repositories": repo_urls,
+            "candidate": repo_urls[0],
+            "references": repo_urls[1:],
             "language": language,
             "branch": branch,
             "threshold": threshold,
         },
         "summary": {
-            "total_repos": len(repo_urls),
-            "suspicious_pairs": len(flagged_pairs),
-            "commit_level_flags": 0,
-            "total_file_pairs_compared": sum(
-                len(r["file_pairs"]) for r in comparison_results
-            ),
+            "candidate": repo_urls[0],
+            "total_references": len(reference_urls),
+            "suspicious_references": len([r for r in comparison_results if r['suspicious']]),
+            "total_file_pairs_compared": sum(len(r['file_pairs']) for r in comparison_results),
         },
-        "repository_matrix": {
-            "repos": repo_list,
-            "similarities": _build_similarity_matrix(comparison_results, repo_list),
-        },
-        "suspicious_pairs": flagged_pairs,
-        "all_comparisons": comparison_results,
+        "verdict": verdict,
+        "confidence": overall_confidence,
+        "comparisons": comparison_results,
     }
     
     # Save report
