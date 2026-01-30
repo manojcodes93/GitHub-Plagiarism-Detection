@@ -6,3 +6,9 @@
 4. https://github.com/thegeekyb0y/pythonprojects
 5. https://github.com/king04aman/All-In-One-Python-Projects
 6. https://github.com/neubig/starter-repo
+7. https://github.com/pallets/flask
+8. https://github.com/psf/requests
+9. https://github.com/scikit-learn/scikit-learn
+10. https://github.com/facebook/react
+11. https://github.com/facebook/react
+12. https://github.com/torvalds/linux

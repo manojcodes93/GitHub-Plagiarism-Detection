@@ -1,0 +1,59 @@
+{
+  "job_id": "d4db5e4b-1882-45e5-84ff-fecad2b3e7dc",
+  "timestamp": "2026-01-30T01:31:14.966525",
+  "parameters": {
+    "repositories": [
+      "https://github.com/psf/requests",
+      "https://github.com/pallets/flask"
+    ],
+    "language": "python",
+    "branch": "main",
+    "threshold": 0.75
+  },
+  "summary": {
+    "total_repos": 2,
+    "suspicious_pairs": 1,
+    "commit_level_flags": 0,
+    "total_file_pairs_compared": 0
+  },
+  "repository_matrix": {
+    "repos": [
+      "https://github.com/psf/requests",
+      "https://github.com/pallets/flask"
+    ],
+    "similarities": [
+      [
+        0.0,
+        0.8783313035964966
+      ],
+      [
+        0.8783313035964966,
+        0.0
+      ]
+    ]
+  },
+  "suspicious_pairs": [
+    {
+      "repo1": "https://github.com/psf/requests",
+      "repo2": "https://github.com/pallets/flask",
+      "repo_similarity": 0.8783313035964966,
+      "file_pairs": [],
+      "commit_pairs": [],
+      "suspicious_pair": true,
+      "file_judgments": [],
+      "explanation": "================================================================================\nPLAGIARISM ANALYSIS REPORT\n================================================================================\n\nAnalysis Date: 2026-01-30 01:31:14\n\nREPOSITORIES\n\u251c\u2500 Repo 1: requests\n\u2514\u2500 Repo 2: flask\n\nOVERALL RISK ASSESSMENT\n\u251c\u2500 Repository Similarity: 87.83% \ud83d\udd34 CRITICAL\n\u251c\u2500 Suspicious Pairs: 0\n\u2514\u2500 Confidence Level: 93%\n\n\u2705 NO SUSPICIOUS FILE PAIRS DETECTED\n\n================================================================================\nVERDICT: \ud83d\uded1 LIKELY PLAGIARISM - IMMEDIATE INVESTIGATION RECOMMENDED\n\nRECOMMENDATIONS:\n  1. Review commit history for similarity patterns\n  2. Check for shared common dependencies or libraries\n  3. Compare code structure and logic flow between files\n  4. Investigate potential code reuse or copying\n\n================================================================================"
+    }
+  ],
+  "all_comparisons": [
+    {
+      "repo1": "https://github.com/psf/requests",
+      "repo2": "https://github.com/pallets/flask",
+      "repo_similarity": 0.8783313035964966,
+      "file_pairs": [],
+      "commit_pairs": [],
+      "suspicious_pair": true,
+      "file_judgments": [],
+      "explanation": "================================================================================\nPLAGIARISM ANALYSIS REPORT\n================================================================================\n\nAnalysis Date: 2026-01-30 01:31:14\n\nREPOSITORIES\n\u251c\u2500 Repo 1: requests\n\u2514\u2500 Repo 2: flask\n\nOVERALL RISK ASSESSMENT\n\u251c\u2500 Repository Similarity: 87.83% \ud83d\udd34 CRITICAL\n\u251c\u2500 Suspicious Pairs: 0\n\u2514\u2500 Confidence Level: 93%\n\n\u2705 NO SUSPICIOUS FILE PAIRS DETECTED\n\n================================================================================\nVERDICT: \ud83d\uded1 LIKELY PLAGIARISM - IMMEDIATE INVESTIGATION RECOMMENDED\n\nRECOMMENDATIONS:\n  1. Review commit history for similarity patterns\n  2. Check for shared common dependencies or libraries\n  3. Compare code structure and logic flow between files\n  4. Investigate potential code reuse or copying\n\n================================================================================"
+    }
+  ]
+}

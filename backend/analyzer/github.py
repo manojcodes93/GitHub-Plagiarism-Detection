@@ -124,6 +124,16 @@ class GitHubAnalyzer:
 
         return code_files
     
+    def delete_repo(self, path: str):
+        import shutil, stat, os
+        
+        def onerror(func, p, exc):
+            os.chmod(p, stat.S_IWUSR)
+            func(p)
+            
+        if os.path.exists(path):
+            shutil.rmtree(path, onerror=onerror)
+    
     def clean_up(self):
         ## Removing all the cloned repos
         import stat

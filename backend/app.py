@@ -5,7 +5,6 @@ LLM-first approach: Uses embeddings and semantic analysis for accurate plagiaris
 
 import os
 import threading
-from itertools import combinations
 import json
 import uuid
 import logging
@@ -245,15 +244,23 @@ def _perform_analysis(
         embeddings = embedding_generator.embed_code_files(files)
         all_embeddings[url] = embeddings
         logger.info(f"Generated {len(embeddings)} embeddings for {url}")
+
+        try:
+            git_analyzer.delete_repo(cloned_paths[url])
+            logger.info(f"Deleted cloned repo for {url}")
+        except Exception as e:
+            logger.warning(f"Failed to delete repo {url}: {e}")
     
     # Step 5: Compute similarity between all repository pairs
     jobs[job_id]["progress"] = 75
     comparison_results = []
-    repo_list = list(repo_urls)
-    
+    repo_list = list(all_embeddings.keys())    
     for i, url1 in enumerate(repo_list):
         for j, url2 in enumerate(repo_list):
             if i >= j:
+                continue
+
+            if not preprocessed_files.get(url1) or not preprocessed_files.get(url2):
                 continue
             
             # Compare files
@@ -270,62 +277,14 @@ def _perform_analysis(
                 all_embeddings[url1],
                 all_embeddings[url2]
             )
-
-            # --- Commit-level analysis ---
-            commits1 = git_analyzer.extract_commits(cloned_paths[url1], limit=50)
-            commits2 = git_analyzer.extract_commits(cloned_paths[url2], limit=50)
-
-            commit_flags = []
-
-            MAX_COMMIT_PAIRS = 15
-            jobs[job_id]["progress"] = 80
-            for c1 in commits1[:MAX_COMMIT_PAIRS]:
-                for c2 in commits2[:MAX_COMMIT_PAIRS]:
-                    if c1["files_changed"] < 3 or c2["files_changed"] < 3:
-                        continue
-                    
-                    diffs1 = git_analyzer.extract_commit_diff(
-                        cloned_paths[url1],
-                        c1["hash"],
-                        language
-                    )
-                    
-                    diffs2 = git_analyzer.extract_commit_diff(
-                        cloned_paths[url2],
-                        c2["hash"],
-                        language
-                    )
-                
-                    if not diffs1 or not diffs2:
-                        continue
-                
-                    emb1 = embedding_generator.embed_commit_diffs(list(diffs1.values()))
-                    emb2 = embedding_generator.embed_commit_diffs(list(diffs2.values()))
-                
-                    # Compare average commit embeddings
-                    sim = similarity_analyzer.cosine_similarity(
-                        np.mean(emb1, axis=0),
-                        np.mean(emb2, axis=0)
-                    )
-                
-                    if sim >= threshold:
-                        commit_flags.append({
-                            "commit1": c1["hash"],
-                            "commit2": c2["hash"],
-                            "similarity": sim,
-                            "files1": c1["files"],
-                            "files2": c2["files"],
-                            "message1": c1["message"],
-                            "message2": c2["message"]
-                        })
             
             comparison_results.append({
                 "repo1": url1,
                 "repo2": url2,
                 "repo_similarity": repo_similarity,
                 "file_pairs": file_comparisons,
-                "commit_pairs": commit_flags,
-                "suspicious_pair": repo_similarity > threshold or bool(commit_flags),
+                "commit_pairs": [],
+                "suspicious_pair": repo_similarity > threshold,
             })
     
     # Step 6: LLM reasoning on flagged pairs
@@ -357,7 +316,7 @@ def _perform_analysis(
         "summary": {
             "total_repos": len(repo_urls),
             "suspicious_pairs": len(flagged_pairs),
-            "commit_level_flags": sum(len(p.get("commit_pairs", [])) for p in flagged_pairs),
+            "commit_level_flags": 0,
             "total_file_pairs_compared": sum(
                 len(r["file_pairs"]) for r in comparison_results
             ),
@@ -372,13 +331,6 @@ def _perform_analysis(
     
     # Save report
     _save_report(report)
-    
-    # Cleanup cloned repositories
-    try:
-        git_analyzer.clean_up()
-        logger.info(f"Cleaned up cloned repositories for job {job_id}")
-    except Exception as e:
-        logger.warning(f"Failed to cleanup repos: {str(e)}")
     
     jobs[job_id]["progress"] = 100
     logger.info(f"Analysis complete for job {job_id}")
@@ -396,6 +348,9 @@ def _build_similarity_matrix(comparisons: list, repo_list: list) -> list:
         j = repo_list.index(comp["repo2"])
         matrix[i][j] = comp["repo_similarity"]
         matrix[j][i] = comp["repo_similarity"]
+    
+    for i in range(n):
+        matrix[i][i] = 1.0
     
     return matrix
 
