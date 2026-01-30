@@ -1,428 +1,408 @@
-"""
-Flask web application for GitHub Commit Plagiarism Detection.
-LLM-first approach: Uses embeddings and semantic analysis for accurate plagiarism detection.
-"""
-
+import sys
 import os
-import threading
-import json
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 import uuid
+import json
+import shutil
 import logging
+import threading
 from datetime import datetime
 from pathlib import Path
-from flask import Flask, render_template, request, jsonify
-import numpy as np
+from flask import Flask, render_template, request, jsonify, send_file
 
-# Import analyzer modules
-from analyzer.github import GitHubAnalyzer
-from analyzer.preprocess import CodePreprocessor
-from analyzer.embeddings import EmbeddingGenerator
-from analyzer.similarity import SimilarityAnalyzer
-from analyzer.llm_reasoner import LLMReasoner
-
-# Setup logging
+# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
-# Flask app setup
-app = Flask(__name__, template_folder="../templates", static_folder="../static")
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
-app.config['UPLOAD_FOLDER'] = "./backend/reports"
+# Import analyzers
+from analyzer.github import GitHubAnalyzer
+from analyzer.embeddings import EmbeddingGenerator
+from analyzer.similarity import SimilarityAnalyzer
+from analyzer.llm_reasoner import LLMReasoner
+from analyzer.preprocess import CodePreprocessor
 
-# Global analysis components
-git_analyzer = GitHubAnalyzer()
-embedding_generator = EmbeddingGenerator()
-similarity_analyzer = SimilarityAnalyzer()
-llm_reasoner = LLMReasoner()
+# Determine root directory (parent of backend)
+ROOT_DIR = Path(__file__).parent.parent
+TEMPLATE_DIR = ROOT_DIR / 'templates'
+STATIC_DIR = ROOT_DIR / 'static'
 
-# In-memory job tracking
+app = Flask(__name__, template_folder=str(TEMPLATE_DIR), static_folder=str(STATIC_DIR))
+
+# Global job storage (in-memory)
 jobs = {}
+jobs_lock = threading.Lock()
+
+# Report output directory
+REPORT_DIR = Path(__file__).parent / 'reports'
+REPORT_DIR.mkdir(parents=True, exist_ok=True)
 
 
-@app.route("/")
-def index():
-    """Render main UI page."""
-    return render_template("index.html")
+def generate_job_id():
+    """Generate unique job ID."""
+    return str(uuid.uuid4())
 
 
-@app.route("/api/health")
-def health_check():
-    """Health check endpoint."""
-    return jsonify({
-        "status": "healthy",
-        "embedding_model": embedding_generator.get_model_info(),
-        "llm_model": llm_reasoner.model_name if llm_reasoner.model else "not_loaded",
-    })
+def update_job_status(job_id, status, progress=None, data=None, error=None):
+    """Thread-safe job status update."""
+    with jobs_lock:
+        if job_id in jobs:
+            jobs[job_id]['status'] = status
+            jobs[job_id]['timestamp'] = datetime.now().isoformat()
+            if progress is not None:
+                jobs[job_id]['progress'] = progress
+            if data is not None:
+                jobs[job_id]['data'] = data
+            if error is not None:
+                jobs[job_id]['error'] = error
+            logger.info(f"Job {job_id}: {status} (progress: {progress})")
 
 
-@app.route("/api/analyze", methods=["POST"])
-def analyze():
+def cleanup_temp_directories(*paths):
+    """Safely clean up temporary directories."""
+    for path in paths:
+        if path and Path(path).exists():
+            try:
+                logger.info(f"Cleaning up {path}")
+                shutil.rmtree(path, ignore_errors=True)
+            except Exception as e:
+                logger.warning(f"Failed to clean {path}: {e}")
+
+
+def _perform_analysis(repositories, language, branch, threshold, job_id):
     """
-    Start plagiarism analysis job.
+    Perform plagiarism analysis.
     
-    Request JSON:
+    Expected format:
     {
-        "repos": ["https://github.com/user/repo1", ...],
-        "language": "python",
-        "branch": "main",
-        "threshold": 0.75
+        "candidate": {"url": "...", "branch": "..."},
+        "references": [{"url": "...", "branch": "..."}, ...]
     }
     """
+    temp_dirs = []
+    try:
+        logger.info(f"Job {job_id}: Starting analysis with {len(repositories['references'])} reference repos")
+        update_job_status(job_id, 'analyzing', progress=0)
+        
+        # Step 1: Clone candidate repo
+        logger.info(f"Job {job_id}: Step 1 - Cloning candidate repository")
+        update_job_status(job_id, 'analyzing', progress=5)
+        
+        git_analyzer = GitHubAnalyzer()
+        candidate_url = repositories['candidate']['url']
+        candidate_branch = repositories['candidate'].get('branch', 'main')
+        
+        candidate_path = git_analyzer.clone_repository(candidate_url, candidate_branch)
+        temp_dirs.append(candidate_path)
+        logger.info(f"Job {job_id}: Cloned candidate from {candidate_url}")
+        
+        # Step 2: Clone reference repos
+        logger.info(f"Job {job_id}: Step 2 - Cloning {len(repositories['references'])} reference repositories")
+        update_job_status(job_id, 'analyzing', progress=10)
+        
+        reference_paths = {}
+        for i, ref in enumerate(repositories['references']):
+            ref_url = ref['url']
+            ref_branch = ref.get('branch', 'main')
+            ref_path = git_analyzer.clone_repository(ref_url, ref_branch)
+            reference_paths[ref_url] = ref_path
+            temp_dirs.append(ref_path)
+            logger.info(f"Job {job_id}: Cloned reference {i+1}/{len(repositories['references'])} from {ref_url}")
+            update_job_status(job_id, 'analyzing', progress=10 + (10 * (i + 1) / len(repositories['references'])))
+        
+        # Step 3: Extract commits before deleting repos
+        logger.info(f"Job {job_id}: Step 3 - Extracting commits")
+        update_job_status(job_id, 'analyzing', progress=21)
+        
+        candidate_commits = git_analyzer.extract_commits(candidate_path, limit=50)
+        logger.info(f"Job {job_id}: Extracted {len(candidate_commits)} candidate commits")
+        
+        reference_commits = {}
+        for ref_url, ref_path in reference_paths.items():
+            commits = git_analyzer.extract_commits(ref_path, limit=50)
+            reference_commits[ref_url] = commits
+            logger.info(f"Job {job_id}: Extracted {len(commits)} commits from {ref_url}")
+        
+        # Step 4: Extract source files before deleting repos
+        logger.info(f"Job {job_id}: Step 4 - Extracting source files")
+        update_job_status(job_id, 'analyzing', progress=25)
+        
+        candidate_files = git_analyzer.extract_source_files(candidate_path, language)
+        logger.info(f"Job {job_id}: Extracted {len(candidate_files)} source files from candidate")
+        
+        reference_files = {}
+        for ref_url, ref_path in reference_paths.items():
+            files = git_analyzer.extract_source_files(ref_path, language)
+            reference_files[ref_url] = files
+            logger.info(f"Job {job_id}: Extracted {len(files)} source files from {ref_url}")
+        
+        # CRITICAL: Clean up cloned repos BEFORE anything else (all data extracted)
+        logger.info(f"Job {job_id}: Step 5 - Cleaning up temporary repositories")
+        cleanup_temp_directories(*temp_dirs)
+        temp_dirs = []  # Clear list since we cleaned them
+        
+        # Verify we have files to analyze
+        if not candidate_files:
+            raise RuntimeError(f"No {language} source files found in candidate repository")
+        
+        if not reference_files:
+            raise RuntimeError(f"No {language} source files found in reference repositories")
+        
+        # Step 6: Preprocess code
+        logger.info(f"Job {job_id}: Step 6 - Preprocessing code")
+        update_job_status(job_id, 'analyzing', progress=30)
+        
+        preprocessor = CodePreprocessor()
+        
+        candidate_preprocessed = {
+            name: preprocessor.preprocess(content)
+            for name, content in candidate_files.items()
+        }
+        
+        reference_preprocessed = {}
+        for ref_url, files in reference_files.items():
+            reference_preprocessed[ref_url] = {
+                name: preprocessor.preprocess(content)
+                for name, content in files.items()
+            }
+        
+        logger.info(f"Job {job_id}: Preprocessing complete")
+        
+        # Step 7: Generate embeddings
+        logger.info(f"Job {job_id}: Step 7 - Generating embeddings")
+        update_job_status(job_id, 'analyzing', progress=35)
+        
+        embedding_gen = EmbeddingGenerator()
+        
+        candidate_embeddings = embedding_gen.embed_code_files(candidate_preprocessed)
+        candidate_commit_embeddings = embedding_gen.embed_commit_diffs(candidate_commits)
+        
+        reference_embeddings = {}
+        reference_commit_embeddings = {}
+        for i, (ref_url, files) in enumerate(reference_preprocessed.items()):
+            reference_embeddings[ref_url] = embedding_gen.embed_code_files(files)
+            reference_commit_embeddings[ref_url] = embedding_gen.embed_commit_diffs(
+                reference_commits[ref_url]
+            )
+            logger.info(f"Job {job_id}: Generated embeddings for reference {i+1}/{len(reference_preprocessed)}")
+            update_job_status(job_id, 'analyzing', progress=35 + (10 * (i + 1) / len(reference_preprocessed)))
+        
+        # Step 8: Compare embeddings
+        logger.info(f"Job {job_id}: Step 8 - Computing similarity scores")
+        update_job_status(job_id, 'analyzing', progress=50)
+        
+        similarity_analyzer = SimilarityAnalyzer()
+        comparisons = {}
+        
+        for i, ref_url in enumerate(reference_embeddings.keys()):
+            # Compare file-level embeddings
+            file_comparisons = similarity_analyzer.compare_files(
+                candidate_embeddings,
+                reference_embeddings[ref_url]
+            )
+            
+            # Compute repository-level similarity
+            repo_similarity = similarity_analyzer.compute_repository_similarity(
+                file_comparisons
+            )
+            
+            comparisons[ref_url] = {
+                'files': file_comparisons,
+                'repository_similarity': repo_similarity,
+                'candidate_url': candidate_url,
+                'reference_url': ref_url
+            }
+            
+            logger.info(f"Job {job_id}: Repo similarity {ref_url}: {repo_similarity:.2f}")
+            update_job_status(job_id, 'analyzing', progress=50 + (20 * (i + 1) / len(reference_embeddings)))
+        
+        # Step 9: LLM reasoning
+        logger.info(f"Job {job_id}: Step 9 - Running plagiarism detection")
+        update_job_status(job_id, 'analyzing', progress=75)
+        
+        llm_reasoner = LLMReasoner()
+        plagiarism_reports = {}
+        
+        for ref_url, comparison in comparisons.items():
+            file_judgments = {
+                file_name: llm_reasoner.judge_file_similarity(
+                    comparison['files'].get(file_name, 0)
+                )
+                for file_name in candidate_files.keys()
+            }
+            
+            repo_judgment = llm_reasoner.judge_file_similarity(
+                comparison['repository_similarity']
+            )
+            
+            explanation = llm_reasoner.generate_plagiarism_explanation(
+                comparison['repository_similarity'],
+                file_judgments
+            )
+            
+            plagiarism_reports[ref_url] = {
+                'file_judgments': file_judgments,
+                'repository_judgment': repo_judgment,
+                'explanation': explanation,
+                'similarity_score': comparison['repository_similarity']
+            }
+            
+            logger.info(f"Job {job_id}: Plagiarism verdict for {ref_url}: {repo_judgment}")
+        
+        # Step 10: Generate final report
+        logger.info(f"Job {job_id}: Step 10 - Generating final report")
+        update_job_status(job_id, 'analyzing', progress=90)
+        
+        final_report = {
+            'job_id': job_id,
+            'timestamp': datetime.now().isoformat(),
+            'candidate': {
+                'url': candidate_url,
+                'branch': candidate_branch,
+                'files_count': len(candidate_files),
+                'commits_count': len(candidate_commits)
+            },
+            'analysis_config': {
+                'language': language,
+                'threshold': threshold,
+                'branch': branch,
+                'total_references': len(repositories['references'])
+            },
+            'comparisons': comparisons,
+            'plagiarism_reports': plagiarism_reports,
+            'overall_plagiarism_verdict': 'PLAGIARISM DETECTED' if any(
+                report.get('repository_judgment') == 'PLAGIARISM' 
+                for report in plagiarism_reports.values()
+            ) else 'CLEAN'
+        }
+        
+        # Save report to JSON
+        report_file = REPORT_DIR / f"report_{job_id}.json"
+        with open(report_file, 'w') as f:
+            json.dump(final_report, f, indent=2)
+        
+        logger.info(f"Job {job_id}: Analysis complete. Report saved to {report_file}")
+        update_job_status(job_id, 'completed', progress=100, data=final_report)
+        
+        return final_report
+        
+    except Exception as e:
+        logger.error(f"Job {job_id}: Analysis failed - {str(e)}", exc_info=True)
+        update_job_status(job_id, 'failed', error=str(e))
+        cleanup_temp_directories(*temp_dirs)
+        raise
+
+
+def run_analysis(repositories, language, branch, threshold, job_id):
+    """Wrapper to run analysis in background thread."""
+    try:
+        _perform_analysis(repositories, language, branch, threshold, job_id)
+    except Exception as e:
+        logger.error(f"Job {job_id}: Background thread exception: {str(e)}", exc_info=True)
+        with jobs_lock:
+            if job_id in jobs:
+                jobs[job_id]['status'] = 'failed'
+                jobs[job_id]['error'] = str(e)
+
+
+# Routes
+@app.route('/')
+def index():
+    """Serve main page."""
+    return render_template('index.html')
+
+
+@app.route('/api/analyze', methods=['POST'])
+def analyze():
+    """Start analysis job."""
     try:
         data = request.get_json()
         
         # Validate input
-        repos = data.get("repos", [])
-        language = data.get("language", "python")
-        branch = data.get("branch", "main")
-        threshold = float(data.get("threshold", 0.75))
+        if not data.get('candidate') or not data.get('references'):
+            return jsonify({'error': 'Missing candidate or references'}), 400
         
-        if not repos or len(repos) < 2:
-            return jsonify({"error": "At least 2 repositories required"}), 400
+        references = data.get('references', [])
+        if len(references) < 2 or len(references) > 10:
+            return jsonify({'error': 'Please provide 2-10 reference repositories'}), 400
         
-        if len(repos) > 10:
-            return jsonify({"error": "Maximum 10 repositories allowed"}), 400
-        
-        if not 0 <= threshold <= 1:
-            return jsonify({"error": "Threshold must be between 0 and 1"}), 400
+        language = data.get('language', 'python')
+        branch = data.get('branch', 'main')
+        threshold = float(data.get('threshold', 0.7))
         
         # Create job
-        job_id = str(uuid.uuid4())
-        jobs[job_id] = {
-            "id": job_id,
-            "status": "processing",
-            "repos": repos,
-            "language": language,
-            "branch": branch,
-            "threshold": threshold,
-            "created_at": datetime.now().isoformat(),
-            "progress": 0,
-            "error": None,
-            "results": None,
-        }
+        job_id = generate_job_id()
+        with jobs_lock:
+            jobs[job_id] = {
+                'job_id': job_id,
+                'status': 'queued',
+                'progress': 0,
+                'timestamp': datetime.now().isoformat(),
+                'data': None,
+                'error': None
+            }
         
-        # Process analysis in background (synchronously for now)
-        try:
-            def run_analysis():
-                try:
-                    results = _perform_analysis(repos, language, branch, threshold, job_id)
-                    jobs[job_id]["status"] = "completed"
-                    jobs[job_id]["results"] = results
-                    jobs[job_id]["progress"] = 100
-                
-                except Exception as e:
-                    logger.error(f"Analysis failed: {str(e)}")
-                    jobs[job_id]["status"] = "failed"
-                    jobs[job_id]["error"] = str(e)
-                    
-            thread = threading.Thread(target=run_analysis, daemon=True)
-            thread.start()
-
-        except Exception as e:
-            logger.error(f"Analysis failed: {str(e)}")
-            jobs[job_id]["status"] = "failed"
-            jobs[job_id]["error"] = str(e)
+        # Start background thread
+        thread = threading.Thread(
+            target=run_analysis,
+            args=(data, language, branch, threshold, job_id),
+            daemon=True
+        )
+        thread.start()
         
-        return jsonify({
-            "job_id": job_id,
-            "status": "processing"
-        })
-    
+        logger.info(f"Started job {job_id}")
+        return jsonify({'job_id': job_id}), 200
+        
     except Exception as e:
-        logger.error(f"Analysis request failed: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Error in /api/analyze: {str(e)}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
 
 
-@app.route("/api/results/<job_id>")
+@app.route('/api/results/<job_id>', methods=['GET'])
 def get_results(job_id):
-    """Get analysis results for a job."""
-    if job_id not in jobs:
-        return jsonify({"error": "Job not found"}), 404
+    """Get job status and results."""
+    with jobs_lock:
+        if job_id not in jobs:
+            return jsonify({'error': 'Job not found'}), 404
+        
+        job = jobs[job_id].copy()
     
-    job = jobs[job_id]
-    return jsonify({
-        "id": job["id"],
-        "status": job["status"],
-        "progress": job["progress"],
-        "error": job["error"],
-        "results": job["results"],
-        "created_at": job["created_at"],
-    })
+    return jsonify(job), 200
 
 
-@app.route("/api/jobs")
+@app.route('/api/jobs', methods=['GET'])
 def list_jobs():
     """List all jobs."""
-    return jsonify({
-        "jobs": [
-            {
-                "id": job["id"],
-                "status": job["status"],
-                "repos": job["repos"],
-                "progress": job["progress"],
-                "created_at": job["created_at"],
-            }
-            for job in jobs.values()
-        ]
-    })
+    with jobs_lock:
+        job_list = list(jobs.values())
+    
+    return jsonify(job_list), 200
 
 
-def _perform_analysis(
-    repo_urls: list,
-    language: str,
-    branch: str,
-    threshold: float,
-    job_id: str
-) -> dict:
-    """
-    Perform full plagiarism analysis.
-    
-    LLM-first pipeline:
-    1. Clone repos
-    2. Extract source files
-    3. Preprocess code
-    4. Generate embeddings
-    5. Compute similarity
-    6. LLM reasoning
-    7. Generate report
-    """
-    logger.info(f"Starting analysis job {job_id} for {len(repo_urls)} repositories")
-
-    jobs[job_id]["progress"] = 5
-    jobs[job_id]["status"] = "processing"
-    logger.info("Job started, progress set to 5%")
-    
-    # Step 1: Clone repositories
-    cloned_paths = {}
-    for i, url in enumerate(repo_urls):
-        jobs[job_id]["progress"] = int((i / len(repo_urls)) * 20)
-        try:
-            path = git_analyzer.clone_repository(url, branch)
-            cloned_paths[url] = path
-            logger.info(f"Cloned {url}")
-        except Exception as e:
-            logger.error(f"Failed to clone {url}: {str(e)}")
-            raise
-
-    jobs[job_id]["progress"] = 20
-    
-    # Step 2: Extract source files for target language
-    all_files = {}
-    for i, (url, path) in enumerate(cloned_paths.items()):
-        jobs[job_id]["progress"] = 20 + int((i / len(cloned_paths)) * 20)
-        files = git_analyzer.extract_code_files(path, language)
-
-        if not files:
-            logger.warning(f"No {language} files found for {url}")
-            continue
-
-        MAX_FILES = 40
-        files = dict(list(files.items())[:MAX_FILES])
-
-        all_files[url] = files
-        logger.info(f"Extracted {len(files)} {language} files from {url}")
-
-    if len(all_files) < 2:
-        raise RuntimeError("Not enough repositories with valid source files")
-    
-    # Step 3: Preprocess code
-    preprocessed_files = {}
-    for i, (url, files) in enumerate(all_files.items()):
-        jobs[job_id]["progress"] = 40 + int((i / len(all_files)) * 20)
-        preprocessed = CodePreprocessor.preprocess_files(files, language, aggressive=True)
-        preprocessed_files[url] = preprocessed
-        logger.info(f"Preprocessed {len(preprocessed)} files from {url}")
-    
-    # Step 4: Generate embeddings
-    all_embeddings = {}
-    for i, (url, files) in enumerate(preprocessed_files.items()):
-        jobs[job_id]["progress"] = 60 + int((i / len(preprocessed_files)) * 15)
-        logger.info(f"Embedding {len(files)} files for {url}")
-        embeddings = embedding_generator.embed_code_files(files)
-        all_embeddings[url] = embeddings
-        logger.info(f"Generated {len(embeddings)} embeddings for {url}")
-
-        try:
-            git_analyzer.delete_repo(cloned_paths[url])
-            logger.info(f"Deleted cloned repo for {url}")
-        except Exception as e:
-            logger.warning(f"Failed to delete repo {url}: {e}")
-    
-    # Step 5: Compute similarity between all repository pairs
-    jobs[job_id]["progress"] = 75
-    comparison_results = []
-    repo_list = list(all_embeddings.keys())    
-    for i, url1 in enumerate(repo_list):
-        for j, url2 in enumerate(repo_list):
-            if i >= j:
-                continue
-
-            if not preprocessed_files.get(url1) or not preprocessed_files.get(url2):
-                continue
-            
-            # Compare files
-            file_comparisons = similarity_analyzer.compare_files(
-                all_embeddings[url1],
-                all_embeddings[url2],
-                preprocessed_files[url1],
-                preprocessed_files[url2],
-                threshold
-            )
-            
-            # Compute repo similarity
-            repo_similarity = similarity_analyzer.compute_repository_similarity(
-                all_embeddings[url1],
-                all_embeddings[url2]
-            )
-            
-            comparison_results.append({
-                "repo1": url1,
-                "repo2": url2,
-                "repo_similarity": repo_similarity,
-                "file_pairs": file_comparisons,
-                "commit_pairs": [],
-                "suspicious_pair": repo_similarity > threshold,
-            })
-    
-    # Step 6: LLM reasoning on flagged pairs
-    jobs[job_id]["progress"] = 85
-    flagged_pairs = [r for r in comparison_results if r["suspicious_pair"]]
-    
-    for pair in flagged_pairs:
-        # Add LLM judgment
-        judgments = llm_reasoner.batch_judge_files(pair["file_pairs"][:5])
-        pair["file_judgments"] = judgments
-        pair["explanation"] = llm_reasoner.generate_plagiarism_explanation(
-            pair["repo1"].split("/")[-1],
-            pair["repo2"].split("/")[-1],
-            pair["file_pairs"],
-            pair["repo_similarity"]
-        )
-    
-    # Step 7: Generate report
-    jobs[job_id]["progress"] = 95
-    report = {
-        "job_id": job_id,
-        "timestamp": datetime.now().isoformat(),
-        "parameters": {
-            "repositories": repo_urls,
-            "language": language,
-            "branch": branch,
-            "threshold": threshold,
-        },
-        "summary": {
-            "total_repos": len(repo_urls),
-            "suspicious_pairs": len(flagged_pairs),
-            "commit_level_flags": 0,
-            "total_file_pairs_compared": sum(
-                len(r["file_pairs"]) for r in comparison_results
-            ),
-        },
-        "repository_matrix": {
-            "repos": repo_list,
-            "similarities": _build_similarity_matrix(comparison_results, repo_list),
-        },
-        "suspicious_pairs": flagged_pairs,
-        "all_comparisons": comparison_results,
-    }
-    
-    # Save report
-    _save_report(report)
-    
-    jobs[job_id]["progress"] = 100
-    logger.info(f"Analysis complete for job {job_id}")
-    
-    return report
-
-
-def _build_similarity_matrix(comparisons: list, repo_list: list) -> list:
-    """Build NxN similarity matrix from comparisons."""
-    n = len(repo_list)
-    matrix = [[0.0 for _ in range(n)] for _ in range(n)]
-    
-    for comp in comparisons:
-        i = repo_list.index(comp["repo1"])
-        j = repo_list.index(comp["repo2"])
-        matrix[i][j] = comp["repo_similarity"]
-        matrix[j][i] = comp["repo_similarity"]
-    
-    for i in range(n):
-        matrix[i][i] = 1.0
-    
-    return matrix
-
-
-def _save_report(report: dict):
-    """Save report to file."""
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-    
-    filename = os.path.join(
-        app.config['UPLOAD_FOLDER'],
-        f"report_{report['job_id']}.json"
-    )
-    
-    with open(filename, 'w') as f:
-        json.dump(report, f, indent=2)
-    
-    logger.info(f"Report saved to {filename}")
-
-
-@app.route("/api/download/<job_id>")
+@app.route('/api/download/<job_id>', methods=['GET'])
 def download_report(job_id):
-    """Download report as JSON."""
-    if job_id not in jobs or jobs[job_id]["status"] != "completed":
-        return jsonify({"error": "Report not available"}), 404
+    """Download JSON report."""
+    report_file = REPORT_DIR / f"report_{job_id}.json"
     
-    filename = os.path.join(
-        app.config['UPLOAD_FOLDER'],
-        f"report_{job_id}.json"
-    )
+    if not report_file.exists():
+        return jsonify({'error': 'Report not found'}), 404
     
-    if not os.path.exists(filename):
-        return jsonify({"error": "Report file not found"}), 404
-    
-    with open(filename, 'r') as f:
-        report = json.load(f)
-    
-    return jsonify(report)
-
-
-@app.errorhandler(404)
-def not_found(error):
-    """Handle 404 errors."""
-    return jsonify({"error": "Not found"}), 404
-
-
-@app.errorhandler(500)
-def internal_error(error):
-    """Handle 500 errors."""
-    logger.error(f"Internal error: {str(error)}")
-    return jsonify({"error": "Internal server error"}), 500
-
-
-def _validate_dependencies():
-    """Validate all required dependencies are installed."""
     try:
-        import torch
-        import sentence_transformers
-        import git
-        logger.info("All dependencies validated successfully")
-        return True
-    except ImportError as e:
-        logger.error(f"Missing required dependency: {str(e)}")
-        logger.error("Please install requirements: pip install -r requirements.txt")
-        return False
+        return send_file(
+            report_file,
+            mimetype='application/json',
+            as_attachment=True,
+            download_name=f"plagiarism_report_{job_id}.json"
+        )
+    except Exception as e:
+        logger.error(f"Error downloading report {job_id}: {str(e)}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
 
 
-if __name__ == "__main__":
-    logger.info("Starting Plagiarism Detection Application")
-    
-    # Validate dependencies before starting
-    if not _validate_dependencies():
-        logger.error("Failed to start: Missing dependencies")
-        exit(1)
-    
-    app.run(debug=True, host="0.0.0.0", port=5000)
+if __name__ == '__main__':
+    logger.info("Starting Plagiarism Detection Server")
+    app.run(debug=False, host='127.0.0.1', port=5000, threaded=True, use_reloader=False)
+

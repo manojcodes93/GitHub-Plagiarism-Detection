@@ -1,257 +1,312 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CodeMirror - GitHub Plagiarism Detection</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+  </head>
+  <body>
     <div class="wrapper">
-        <!-- Navigation -->
-        <nav class="navbar">
-            <div class="nav-container">
-                <a href="#" class="nav-logo" onclick="goHome(event)">
-                    <img src="{{ url_for('static', filename='logo.png') }}" alt="CodeMirror Logo" class="logo-image">
-                    <span class="logo-text">CodeMirror</span>
-                </a>
-                <ul class="nav-menu">
-                    <li><a href="#" class="nav-link">Home</a></li>
-                    <li><a href="#" class="nav-link">Dashboard</a></li>
-                    <li><a href="#" class="nav-link">Analysis</a></li>
-                    <li><a href="#" class="nav-link">Reports</a></li>
-                </ul>
-            </div>
-        </nav>
+      <!-- Navigation -->
+      <nav class="navbar">
+        <div class="nav-container">
+          <a href="#" class="nav-logo" onclick="goHome(event)">
+            <img
+              src="{{ url_for('static', filename='logo.png') }}"
+              alt="CodeMirror Logo"
+              class="logo-image"
+            />
+            <span class="logo-text">CodeMirror</span>
+          </a>
+          <ul class="nav-menu">
+            <li>
+              <a href="#" class="nav-link" onclick="goHome(event)">Home</a>
+            </li>
+            <li>
+              <a href="#" class="nav-link" onclick="scrollToDashboard()"
+                >Dashboard</a
+              >
+            </li>
+            <li>
+              <a href="#" class="nav-link" onclick="scrollToAnalysis()"
+                >Analysis</a
+              >
+            </li>
+            <li>
+              <a href="#" class="nav-link" onclick="scrollToDashboard()"
+                >Reports</a
+              >
+            </li>
+          </ul>
+        </div>
+      </nav>
 
-        <!-- Hero Section -->
-        <section id="heroSection" class="hero-section">
-            <div class="hero-content">
-                <h1 class="hero-title">GitHub Plagiarism<br>Detection System</h1>
-                <p class="hero-subtitle">Automatically compare repositories, detect suspicious overlaps, and get explainable plagiarism insights — all in one place.</p>
-                <div class="hero-buttons">
-                    <button class="btn btn-primary" onclick="scrollToAnalysis()">Get Started →</button>
-                    <button class="btn btn-secondary" onclick="scrollToDashboard()">Dashboard</button>
+      <!-- Hero Section -->
+      <section id="heroSection" class="hero-section">
+        <div class="hero-content">
+          <h1 class="hero-title">GitHub Plagiarism<br />Detection System</h1>
+          <p class="hero-subtitle">
+            Automatically compare repositories, detect suspicious overlaps, and
+            get explainable plagiarism insights — all in one place.
+          </p>
+          <div class="hero-buttons">
+            <button class="btn btn-primary" onclick="scrollToAnalysis()">
+              Get Started →
+            </button>
+            <button class="btn btn-secondary" onclick="scrollToDashboard()">
+              Dashboard
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Main Container -->
+      <div class="container" id="mainContainer" style="display: none">
+        <!-- Analysis Form Section -->
+        <section id="analysisSection" class="analysis-section">
+          <div class="section-header">
+            <h2>Enter GitHub Repository URLs</h2>
+            <p>
+              Input multiple GitHub repository URLs to start the similarity
+              analysis.
+            </p>
+          </div>
+
+          <form id="analyzeForm" class="analysis-form">
+            <div class="form-inputs">
+              <div class="input-group">
+                <label>Target Language</label>
+                <select id="language" class="form-control">
+                  <option value="python">Python</option>
+                  <option value="java">Java</option>
+                  <option value="javascript">JavaScript</option>
+                  <option value="typescript">TypeScript</option>
+                  <option value="csharp">C#</option>
+                  <option value="cpp">C++</option>
+                </select>
+              </div>
+
+              <div class="input-group">
+                <label>Branch to Analyze</label>
+                <input
+                  type="text"
+                  id="branch"
+                  class="form-control"
+                  value="main"
+                  readonly
+                />
+              </div>
+
+              <div class="input-group">
+                <label>Similarity Threshold</label>
+                <div class="threshold-control">
+                  <input
+                    type="range"
+                    id="thresholdSlider"
+                    class="slider"
+                    min="0.5"
+                    max="1"
+                    step="0.05"
+                    value="0.75"
+                  />
+                  <span id="thresholdValue" class="threshold-value">0.75</span>
                 </div>
+              </div>
             </div>
+
+            <div class="repo-inputs">
+              <div id="repositoriesList" class="repositories-list"></div>
+              <button
+                type="button"
+                class="btn btn-outline"
+                onclick="addRepositoryInput()"
+              >
+                + Add Another Repository
+              </button>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-large">
+              Run Analysis
+            </button>
+          </form>
         </section>
 
-        <!-- Main Container -->
-        <div class="container" id="mainContainer" style="display: none;">
-            <!-- Analysis Form Section -->
-            <section id="analysisSection" class="analysis-section">
-                <div class="section-header">
-                    <h2>Enter GitHub Repository URLs</h2>
-                    <p>Input multiple GitHub repository URLs to start the similarity analysis.</p>
-                </div>
+        <!-- Status Section -->
+        <section id="statusSection" class="status-section hidden">
+          <div class="status-card">
+            <h2>Analysis Progress</h2>
+            <div class="status-info">
+              <div class="info-row">
+                <span class="info-label">Job ID:</span>
+                <code id="jobId" class="info-value"></code>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Status:</span>
+                <span id="status" class="status-badge status-processing"
+                  >Processing</span
+                >
+              </div>
+            </div>
+            <div class="progress-container">
+              <div id="progressFill" class="progress-bar"></div>
+            </div>
+            <div class="progress-text">
+              <span id="progressPercent">0%</span>
+            </div>
+          </div>
+        </section>
 
-                <form id="analyzeForm" class="analysis-form">
-                    <div class="form-inputs">
-                        <div class="input-group">
-                            <label>Target Language</label>
-                            <select id="language" class="form-control">
-                                <option value="python">Python</option>
-                                <option value="java">Java</option>
-                                <option value="javascript">JavaScript</option>
-                                <option value="typescript">TypeScript</option>
-                                <option value="csharp">C#</option>
-                                <option value="cpp">C++</option>
-                            </select>
-                        </div>
+        <!-- Results Section -->
+        <section id="resultsSection" class="results-section hidden">
+          <div class="section-header">
+            <h2>Similarity Overview</h2>
+            <p>
+              Discover code similarities between the queried "main" branches and
+              repositories across the Internet.
+            </p>
+          </div>
 
-                        <div class="input-group">
-                            <label>Branch to Analyze</label>
-                            <input type="text" id="branch" class="form-control" value="main" readonly>
-                        </div>
+          <!-- Summary Stats -->
+          <div class="summary-stats">
+            <div class="stat-card">
+              <div class="stat-number" id="statTotalRepos">3</div>
+              <div class="stat-label">Repositories Analyzed</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="statSuspiciousPairs">0</div>
+              <div class="stat-label">Suspicious Pairs</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="statFilePairs">0</div>
+              <div class="stat-label">Similar Files</div>
+            </div>
+          </div>
 
-                        <div class="input-group">
-                            <label>Similarity Threshold</label>
-                            <div class="threshold-control">
-                                <input type="range" id="thresholdSlider" class="slider" min="0.5" max="1" step="0.05" value="0.75">
-                                <span id="thresholdValue" class="threshold-value">0.75</span>
-                            </div>
-                        </div>
-                    </div>
+          <!-- Repository Similarity Matrix -->
+          <div class="matrix-section">
+            <h3>Repository Similarity Matrix</h3>
+            <div id="similarityMatrix" class="matrix-container"></div>
+          </div>
 
-                    <div class="repo-inputs">
-                        <div id="repositoriesList" class="repositories-list"></div>
-                        <button type="button" class="btn btn-outline" onclick="addRepositoryInput()">+ Add Another Repository</button>
-                    </div>
+          <!-- Flagged Pairs -->
+          <div class="flagged-section">
+            <h3>🚨 Flagged Repository Pairs</h3>
+            <div id="suspiciousList" class="suspicious-list"></div>
+          </div>
 
-                    <button type="submit" class="btn btn-primary btn-large">Run Analysis</button>
-                </form>
-            </section>
+          <!-- Action Buttons -->
+          <div class="action-buttons">
+            <button id="downloadBtn" class="btn btn-secondary">
+              📥 Download Report (JSON)
+            </button>
+            <button id="backBtn" class="btn btn-outline">← Back to Form</button>
+          </div>
+        </section>
 
-            <!-- Status Section -->
-            <section id="statusSection" class="status-section hidden">
-                <div class="status-card">
-                    <h2>Analysis Progress</h2>
-                    <div class="status-info">
-                        <div class="info-row">
-                            <span class="info-label">Job ID:</span>
-                            <code id="jobId" class="info-value"></code>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Status:</span>
-                            <span id="status" class="status-badge status-processing">Processing</span>
-                        </div>
-                    </div>
-                    <div class="progress-container">
-                        <div id="progressFill" class="progress-bar"></div>
-                    </div>
-                    <div class="progress-text">
-                        <span id="progressPercent">0%</span>
-                    </div>
-                </div>
-            </section>
+        <!-- Error Section -->
+        <section id="errorSection" class="error-section hidden">
+          <div class="error-card">
+            <h2>⚠️ Error</h2>
+            <div id="errorMessage" class="error-message"></div>
+            <button id="errorBackBtn" class="btn btn-secondary">
+              ← Back to Form
+            </button>
+          </div>
+        </section>
+      </div>
 
-            <!-- Results Section -->
-            <section id="resultsSection" class="results-section hidden">
-                <div class="section-header">
-                    <h2>Similarity Overview</h2>
-                    <p>Discover code similarities between the queried "main" branches and repositories across the Internet.</p>
-                </div>
-
-                <!-- Summary Stats -->
-                <div class="summary-stats">
-                    <div class="stat-card">
-                        <div class="stat-number" id="statTotalRepos">3</div>
-                        <div class="stat-label">Repositories Analyzed</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="statSuspiciousPairs">0</div>
-                        <div class="stat-label">Suspicious Pairs</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="statFilePairs">0</div>
-                        <div class="stat-label">Similar Files</div>
-                    </div>
-                </div>
-
-                <!-- Repository Similarity Matrix -->
-                <div class="matrix-section">
-                    <h3>Repository Similarity Matrix</h3>
-                    <div id="similarityMatrix" class="matrix-container"></div>
-                </div>
-
-                <!-- Flagged Pairs -->
-                <div class="flagged-section">
-                    <h3>🚨 Flagged Repository Pairs</h3>
-                    <div id="suspiciousList" class="suspicious-list"></div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="action-buttons">
-                    <button id="downloadBtn" class="btn btn-secondary">📥 Download Report (JSON)</button>
-                    <button id="backBtn" class="btn btn-outline">← Back to Form</button>
-                </div>
-            </section>
-
-            <!-- Error Section -->
-            <section id="errorSection" class="error-section hidden">
-                <div class="error-card">
-                    <h2>⚠️ Error</h2>
-                    <div id="errorMessage" class="error-message"></div>
-                    <button id="errorBackBtn" class="btn btn-secondary">← Back to Form</button>
-                </div>
-            </section>
-        </div>
-
-        <!-- Footer -->
-        <footer class="footer">
-            <p>CodeMirror - LLM-Powered GitHub Plagiarism Detection | Using Hugging Face Embeddings & Semantic Similarity</p>
-        </footer>
+      <!-- Footer -->
+      <footer class="footer">
+        <p>
+          CodeMirror - LLM-Powered GitHub Plagiarism Detection | Using Hugging
+          Face Embeddings & Semantic Similarity
+        </p>
+      </footer>
     </div>
 
     <!-- Details Modal -->
     <div id="detailsModal" class="modal hidden">
-        <div class="modal-overlay" onclick="closeModal()"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modalTitle"></h3>
-                <button class="modal-close" onclick="closeModal()">✕</button>
-            </div>
-            <div class="modal-body" id="modalBody"></div>
+      <div class="modal-overlay" onclick="closeModal()"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modalTitle"></h3>
+          <button class="modal-close" onclick="closeModal()">✕</button>
         </div>
+        <div class="modal-body" id="modalBody"></div>
+      </div>
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
     <script>
-    // Add initial repository inputs
-    function initializeForm() {
-        addRepositoryInput();
-        addRepositoryInput();
-        addRepositoryInput();
-    }
+      // Simplified inputs: first input is Candidate, remaining are References
+      function initializeForm() {
+        const container = document.getElementById("repositoriesList");
 
-    function addRepositoryInput() {
-        const container = document.getElementById('repositoriesList');
-        const input = document.createElement('div');
-        input.className = 'repo-input';
+        // Candidate input (required)
+        const cand = document.createElement("div");
+        cand.className = "repo-input";
+        cand.innerHTML = `
+            <div class="input-wrapper">
+                <span class="repo-icon">🎯</span>
+                <input type="text" class="repo-url" placeholder="Candidate repository (first) - https://github.com/user/repo" required>
+            </div>
+        `;
+        container.appendChild(cand);
+
+        // Two reference inputs to start
+        addReferenceInput();
+        addReferenceInput();
+      }
+
+      function addReferenceInput() {
+        const container = document.getElementById("repositoriesList");
+        const input = document.createElement("div");
+        input.className = "repo-input";
         input.innerHTML = `
             <div class="input-wrapper">
                 <span class="repo-icon">🔗</span>
-                <input type="text" class="repo-url" placeholder="https://github.com/example/repo1">
+                <input type="text" class="repo-url" placeholder="Reference repository - https://github.com/example/repo">
                 <button type="button" class="btn-remove" onclick="this.parentElement.parentElement.remove()">−</button>
             </div>
         `;
         container.appendChild(input);
-    }
+      }
 
-    function scrollToAnalysis() {
-        document.getElementById('mainContainer').style.display = 'block';
-        document.getElementById('analysisSection').scrollIntoView({ behavior: 'smooth' });
-    }
+      // Wrapper function for button onclick (calls addReferenceInput)
+      function addRepositoryInput() {
+        addReferenceInput();
+      }
 
-    function scrollToDashboard() {
-        document.getElementById('mainContainer').style.display = 'block';
-        document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
-    }
+      document.addEventListener("DOMContentLoaded", initializeForm);
 
-    // 🔽 ADD THIS FUNCTION (only this)
-    function goHome(e) {
-        e.preventDefault();
+      // Threshold slider sync
+      document
+        .getElementById("thresholdSlider")
+        .addEventListener("input", (e) => {
+          document.getElementById("thresholdValue").textContent =
+            e.target.value;
+        });
 
-        // Hide main content
-        document.getElementById('mainContainer').style.display = 'none';
+      // Form submit handled by external script.js; update validation hook here (optional)
+      document
+        .getElementById("analyzeForm")
+        .addEventListener("submit", async (e) => {
+          const repos = Array.from(document.querySelectorAll(".repo-url"))
+            .map((input) => input.value.trim())
+            .filter((url) => url && url.startsWith("http"));
 
-        // Scroll back to hero (home)
-        document.getElementById('heroSection')
-            .scrollIntoView({ behavior: 'smooth' });
-
-        // Reset sections
-        document.getElementById('resultsSection')?.classList.add('hidden');
-        document.getElementById('statusSection')?.classList.add('hidden');
-        document.getElementById('errorSection')?.classList.add('hidden');
-    }
-
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', initializeForm);
-
-    // Threshold slider sync
-    document.getElementById('thresholdSlider').addEventListener('input', (e) => {
-        document.getElementById('thresholdValue').textContent = e.target.value;
-    });
-
-    // Collect repos from form
-    document.getElementById('analyzeForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const repos = Array.from(document.querySelectorAll('.repo-url'))
-            .map(input => input.value.trim())
-            .filter(url => url && url.startsWith('http'));
-
-        if (repos.length < 2) {
-            showError('At least 2 repositories required');
-            return;
-        }
-
-        const language = document.getElementById('language').value;
-        const branch = document.getElementById('branch').value;
-        const threshold = parseFloat(document.getElementById('thresholdSlider').value);
-
-        await submitAnalysis(repos, language, branch, threshold);
-    });
-</script>
-
-</body>
+          if (repos.length < 3) {
+            e.preventDefault();
+            alert(
+              "Please provide a candidate repo (first) and at least 2 reference repositories",
+            );
+            return false;
+          }
+        });
+    </script>
+  </body>
 </html>

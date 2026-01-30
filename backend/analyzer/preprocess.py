@@ -1,105 +1,79 @@
+"""Code preprocessing module."""
+
 import re
-from typing import Dict
-import keyword
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class CodePreprocessor:
-    def remove_comments(self, code: str, language: str = "python") -> str:
-        ## Removing comments from code
-        if language == "python":
-            code = re.sub(r"#.*$", "", code, flags=re.MULTILINE)
-            code = re.sub(r'"""[\s\S]*?"""', "", code)
-            code = re.sub(r"'''[\s\S]*?'''", "", code)
-        
-        elif language in ["java", "javascript"]:
-            code = re.sub(r"//.*$", "", code, flags=re.MULTILINE)
-            code = re.sub(r"/\*[\s\S]*?\*/", "", code)
-        
-        return code
-    
-    def remove_imports(self, code: str, language: str = "python") -> str:
-        ## Removing import statements
-        if language == "python":
-            code = re.sub(r"^(import|from).*$", "", code, flags=re.MULTILINE)
+    """Preprocess code for analysis."""
 
-        elif language in ["java", "javascript"]:
-            code = re.sub(r"^import.*$", "", code, flags=re.MULTILINE)
+    def __init__(self):
+        pass
 
-        return code
-    
-    def normalize_whitespace(self, code: str) -> str:
-        ## Normalizing whitespace
-        lines = code.split("\n")
-        cleaned_lines = []
-
-        for line in lines:
-            stripped = line.strip()
-            if stripped:
-                cleaned_lines.append(stripped)
-
-        code = "\n".join(cleaned_lines)
-        code = re.sub(r"\s+", " ", code)
+    def remove_comments(self, code, language='python'):
+        """Remove comments from code."""
+        if language.lower() == 'python':
+            # Remove single-line comments
+            code = re.sub(r'#.*?$', '', code, flags=re.MULTILINE)
+            # Remove docstrings
+            code = re.sub(r'""".*?"""', '', code, flags=re.DOTALL)
+            code = re.sub(r"'''.*?'''", '', code, flags=re.DOTALL)
+        else:
+            # For C-like languages
+            # Remove single-line comments
+            code = re.sub(r'//.*?$', '', code, flags=re.MULTILINE)
+            # Remove multi-line comments
+            code = re.sub(r'/\*.*?\*/', '', code, flags=re.DOTALL)
 
         return code
-    
-    def normalize_identifiers(self, code: str, language: str = "python") -> str:
+
+    def remove_imports(self, code):
+        """Remove import statements."""
+        code = re.sub(r'^import\s+.*?$', '', code, flags=re.MULTILINE)
+        code = re.sub(r'^from\s+.*?import\s+.*?$', '', code, flags=re.MULTILINE)
+        return code
+
+    def normalize_whitespace(self, code):
+        """Normalize whitespace and indentation."""
+        # Remove trailing whitespace from lines
+        code = '\n'.join(line.rstrip() for line in code.split('\n'))
+        # Normalize multiple blank lines to single
+        code = re.sub(r'\n\n+', '\n\n', code)
+        # Remove leading/trailing whitespace from entire code
+        code = code.strip()
+        return code
+
+    def normalize_identifiers(self, code):
+        """Normalize variable and function names."""
+        # Replace function definitions with generic names
+        code = re.sub(r'\bdef\s+\w+\s*\(', 'def func(', code)
+        # Replace class definitions with generic names
+        code = re.sub(r'\bclass\s+\w+\s*[\(:]', 'class Class(', code)
+        return code
+
+    def preprocess(self, code, language='python', normalize_ids=False):
         """
-        Normalize user-defined identifiers while preserving keywords and structure.
+        Full preprocessing pipeline.
+        
+        Args:
+            code: Source code string
+            language: Programming language
+            normalize_ids: Whether to normalize identifiers
+            
+        Returns:
+            Preprocessed code
         """
-        if language != "python":
-            return code
-        
-        python_keywords = set(keyword.kwlist)
-        python_builtins = set(dir(__builtins__))
-        
-        def replacer(match):
-            token = match.group(0)
-            if token in python_keywords or token in python_builtins:
-                return token
-            return "VAR"
-        
-        # Replace variable and function names, not keywords
-        
-        code = re.sub(r"\b[a-zA-Z_]\w*\b", replacer, code)
-        
-        # Normalize numbers and strings
-        code = re.sub(r"\b\d+\b", "NUM", code)
-        code = re.sub(r'(["\']).*?\1', "STR", code)
-        
-        return code
-
-    def preprocess(
-        self,
-        code: str,
-        language: str = "python",
-        aggressive: bool = False
-    ) -> str:
-        ## Full preprocessing pipeline
-        code = self.remove_comments(code, language)
-        code = self.remove_imports(code, language)
-        code = self.normalize_whitespace(code)
-
-        if aggressive:
-            code = self.normalize_identifiers(code, language)
+        try:
+            code = self.remove_comments(code, language)
+            code = self.remove_imports(code)
             code = self.normalize_whitespace(code)
-
-        return code
-    
-    @staticmethod
-    def preprocess_files(
-        files: Dict[str, str],
-        language: str = "python",
-        aggressive: bool = False
-    ) -> Dict[str, str]:
-        ## Applying preprocessing to multiple files
-
-        processed_files = {}
-        preprocessor = CodePreprocessor()
-        
-        for path, content in files.items():
-            processed_files[path] = preprocessor.preprocess(
-                content,
-                language,
-                aggressive
-            )
-
-        return processed_files
+            
+            if normalize_ids:
+                code = self.normalize_identifiers(code)
+            
+            return code
+        except Exception as e:
+            logger.error(f"Preprocessing failed: {e}")
+            return code

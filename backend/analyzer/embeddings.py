@@ -1,86 +1,120 @@
-from sentence_transformers import SentenceTransformer
+"""Code embeddings generation."""
+
+import logging
 import numpy as np
-from typing import Dict, List, Union
+from sentence_transformers import SentenceTransformer
+
+logger = logging.getLogger(__name__)
+
 
 class EmbeddingGenerator:
-    def __init__(self, model_name: str = "sentence-transformers/all-MiniLM-L6-v2"):
-        self.model_name = model_name
-        self.model = SentenceTransformer(model_name)
+    """Generate embeddings for code and commit messages."""
 
-    def get_model_info(self):
-        ## Getting model information.
-        return self.model_name
-    
-    def _chunk_code(self, code: str, max_lines: int = 40) -> List[str]:
-        """
-        Split code into chunks of N lines to capture partial plagiarism.
-        """
-        lines = code.split("\n")
-        chunks = []
+    def __init__(self, model_name='sentence-transformers/all-MiniLM-L6-v2'):
+        """Initialize with sentence transformer model."""
+        try:
+            logger.info(f"Loading embedding model: {model_name}")
+            self.model = SentenceTransformer(model_name)
+            logger.info("Embedding model loaded successfully")
+        except Exception as e:
+            logger.error(f"Failed to load embedding model: {e}")
+            raise
 
-        for i in range(0, len(lines), max_lines):
-            chunk = "\n".join(lines[i:i + max_lines]).strip()
-            if chunk:
-                chunks.append(chunk)
+    def _chunk_code(self, code, chunk_size=100):
+        """
+        Split code into chunks by lines.
         
-        return chunks
+        Args:
+            code: Source code string
+            chunk_size: Number of lines per chunk
+            
+        Returns:
+            List of code chunks
+        """
+        lines = code.split('\n')
+        chunks = []
+        for i in range(0, len(lines), chunk_size):
+            chunk = '\n'.join(lines[i:i + chunk_size])
+            if chunk.strip():
+                chunks.append(chunk)
+        return chunks if chunks else [code]
 
-    def _convert_to_list(self, texts: Union[str, List[str]]) -> List[str]:
+    def _generate_embeddings(self, texts):
         """
-        Normalising the input format
-        single str -> List
-        List stays as a list
+        Generate embeddings for list of texts.
+        
+        Args:
+            texts: List of text strings
+            
+        Returns:
+            numpy array of embeddings
         """
-        if isinstance(texts, str):
-            return [texts]
-        return texts
-    
-    def _generate_embeddings(self, texts : List[str]) -> np.ndarray:
-        texts = self._convert_to_list(texts)
-        ## Generating embeddings using Transformer model
-        return self.model.encode(
-            texts, 
-            convert_to_numpy = True, 
-            show_progress_bar = False, 
-            batch_size=16
-        )
-    
-    
-    def embed_code_files(self, files: Dict[str, str]) -> Dict[str, np.ndarray]:
-        ## Generate aggregated embeddings for code files using chunking.
+        if not texts:
+            return np.array([])
+
+        try:
+            embeddings = self.model.encode(texts, convert_to_numpy=True)
+            return embeddings
+        except Exception as e:
+            logger.error(f"Embedding generation failed: {e}")
+            return np.array([])
+
+    def embed_code_files(self, files):
+        """
+        Generate embeddings for source files.
+        
+        Args:
+            files: Dict of {filename: content}
+            
+        Returns:
+            Dict of {filename: embedding_vector}
+        """
         embeddings = {}
 
-        for path, content in files.items():
-            # Skip empty files
-            if not content or not content.strip():
-                continue
-            
-            chunks = self._chunk_code(content)
+        try:
+            for filename, content in files.items():
+                chunks = self._chunk_code(content)
+                if chunks:
+                    chunk_embeddings = self._generate_embeddings(chunks)
+                    if len(chunk_embeddings) > 0:
+                        # Average embeddings across chunks
+                        file_embedding = np.mean(chunk_embeddings, axis=0)
+                        embeddings[filename] = file_embedding
+                    else:
+                        logger.warning(f"Failed to embed {filename}")
 
-            if not chunks:
-                continue
+            logger.info(f"Generated embeddings for {len(embeddings)} files")
+            return embeddings
 
-            chunk_embeddings = self._generate_embeddings(chunks)
+        except Exception as e:
+            logger.error(f"File embedding failed: {e}")
+            return {}
 
-            # Aggregate chunk embeddings (mean pooling)
-            file_embedding = np.mean(chunk_embeddings, axis=0)
-            embeddings[path] = file_embedding
+    def embed_commit_diffs(self, commits):
+        """
+        Generate embeddings for commit diffs.
         
-        return embeddings
-    
-    def embed_commit_diffs(self, diffs: List[str]) -> np.ndarray:
-        ## Generating embeddings for commit diff
-        processed_diffs = []
-        
-        for diff in diffs:
-            lines = diff.split("\n")
-            ## Keeping only added and removed lines
-            relevant_lines = []
-            for line in lines:
-                if line.startswith("+") or line.startswith("-"):
-                    relevant_lines.append(line)
+        Args:
+            commits: List of commit dicts with 'diff' field
             
-            trimmed_diff = "\n".join(relevant_lines[:100])
-            processed_diffs.append(trimmed_diff)
+        Returns:
+            List of embedding vectors
+        """
+        diffs = []
 
-        return self._generate_embeddings(processed_diffs)
+        try:
+            for commit in commits:
+                if commit.get('diff'):
+                    diffs.append(commit['diff'][:1000])  # Limit diff size
+
+            if diffs:
+                embeddings = self._generate_embeddings(diffs)
+                logger.info(f"Generated embeddings for {len(embeddings)} commits")
+                return embeddings.tolist() if len(embeddings) > 0 else []
+            else:
+                logger.warning("No diffs to embed")
+                return []
+
+        except Exception as e:
+            logger.error(f"Commit embedding failed: {e}")
+            return []

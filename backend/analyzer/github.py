@@ -1,151 +1,214 @@
+"""GitHub repository analyzer and cloner."""
+
 import os
+import stat
 import shutil
+import logging
 import tempfile
 from pathlib import Path
-from typing import List, Dict
 from git import Repo
-import hashlib
+from git.exc import GitCommandError
+
+logger = logging.getLogger(__name__)
+
 
 class GitHubAnalyzer:
+    """Clone GitHub repositories and extract code/commit information."""
 
-    def __init__(self, base_dir: str = None):
-        ## Deciding where the repos will be cloned
+    SUPPORTED_LANGUAGES = {
+        'python': ['.py'],
+        'javascript': ['.js', '.ts', '.jsx', '.tsx'],
+        'java': ['.java'],
+        'cpp': ['.cpp', '.cc', '.cxx', '.h', '.hpp'],
+        'c': ['.c', '.h'],
+        'go': ['.go'],
+        'rust': ['.rs']
+    }
 
-        self.base_dir = base_dir or tempfile.gettempdir()
-        self.cloned_paths = []
-    
-    def clone_repository(self, repo_url: str, branch: str = "main") -> str:
-        repo_name = repo_url.split("/")[-1].replace(".git", "")
-        repo_hash = hashlib.md5(repo_url.encode()).hexdigest()[:8]
+    def __init__(self):
+        self.temp_base = Path(tempfile.gettempdir()) / 'plagiarism_detection'
+        self.temp_base.mkdir(parents=True, exist_ok=True)
+        logger.info(f"Initialized GitHubAnalyzer with temp dir: {self.temp_base}")
 
-        # Create a UNIQUE temp directory every time
-        base_tmp = tempfile.mkdtemp(prefix="plagiarism_repo_")
-        local_path = os.path.join(base_tmp, f"{repo_name}_{repo_hash}")
+    def _handle_remove_readonly(self, func, path, exc):
+        """Handle permission errors during file removal."""
+        if not os.access(path, os.W_OK):
+            os.chmod(path, stat.S_IWUSR | stat.S_IREAD)
+            func(path)
+        else:
+            raise
 
-        # ✅ SAFETY: remove folder if it somehow exists (Windows edge-case)
-        if os.path.exists(local_path):
-            shutil.rmtree(local_path, ignore_errors=True)
+    def _safe_cleanup(self, path):
+        """Safely remove directory on all platforms including Windows."""
+        if not Path(path).exists():
+            return
 
         try:
-            Repo.clone_from(repo_url, local_path, branch=branch, depth=50)
-        except Exception:
-            # Fallback for repos using 'master'
-            Repo.clone_from(repo_url, local_path, branch="master", depth=50)
-
-        self.cloned_paths.append(local_path)
-        return local_path
-    
-    def extract_commits(self, repo_path: str, limit: int = 100) -> List[Dict]:
-        ## Extracting the commit metadata from repository
-        repo = Repo(repo_path)
-        commits = []
-
-        for commit in repo.iter_commits(max_count=limit):
-            commits.append({
-                "hash": commit.hexsha,
-                "message": commit.message.strip(),
-                "author": commit.author.name,
-                "timestamp": commit.committed_datetime.isoformat(),
-                "files_changed": len(commit.stats.files),
-                "insertions": sum(f["insertions"] for f in commit.stats.files.values()),
-                "deletions": sum(f["deletions"] for f in commit.stats.files.values()),
-                "files": list(commit.stats.files.keys()),
-            })
-
-        return commits
-    
-    def extract_commit_diff(self, repo_path: str, commit_hash: str, language: str = "python") -> Dict[str, str]:
-        ## Extract per-file diffs for a commit, filtered by language.
-        ## Returns: {file_path: diff_text}
-        repo = Repo(repo_path)
-        commit = repo.commit(commit_hash)
-
-        extensions = {
-            "python": [".py"],
-            "java": [".java"],
-            "javascript": [".js"],
-            "typescript": [".ts"],
-            "csharp": [".cs"],
-            "cpp": [".cpp", ".cc", ".cxx", ".c++", ".h"],
-        }.get(language, [])
-
-        diffs_by_file = {}
-
-        ## Comparing with parent commit
-        if commit.parents:
-            diffs = commit.parents[0].diff(commit, create_patch=True)
-        else:
-            diffs = commit.diff(None, create_patch=True)
+            # Windows: make all files writable before deletion
+            for item in Path(path).rglob('*'):
+                try:
+                    if item.is_file():
+                        item.chmod(stat.S_IWUSR | stat.S_IREAD)
+                except Exception:
+                    pass
             
-        for diff in diffs:
-            file_path = diff.b_path or diff.a_path
-            if not file_path:
-                continue
+            # Remove directory
+            shutil.rmtree(path, ignore_errors=False)
+            logger.info(f"Cleaned up: {path}")
+        except Exception as e:
+            logger.warning(f"Cleanup failed for {path}: {e}, retrying with ignore_errors")
+            try:
+                shutil.rmtree(path, ignore_errors=True)
+            except Exception as e2:
+                logger.error(f"Final cleanup failed: {e2}")
 
-            if extensions and not any(file_path.endswith(ext) for ext in extensions):
-                continue
-                
-            if diff.diff is None:
-                # Skip binary files (images, compiled objects, etc.)
-                continue
-
-            diff_text = diff.diff.decode(errors="ignore")
-            if diff_text.strip():
-                diffs_by_file[file_path] = diff_text
-
-        return diffs_by_file
-    
-    def extract_code_files(self, repo_path: str, language: str = "python") -> Dict[str, str]:
-        ## Extracting the source code files of a given language
-
-        extensions = {
-            "python": [".py"],
-            "java": [".java"],
-            "javascript": [".js"],
-            "typescript": [".ts"],
-            "csharp": [".cs"],
-            "cpp": [".cpp", ".cc", ".cxx", ".c++", ".h"],
-        }.get(language, [])
-
-        code_files = {}
-
-        for file_path in Path(repo_path).rglob("*"):
-            if not file_path.is_file():
-                continue
-
-            if file_path.suffix not in extensions:
-                continue
-
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                relative_path = str(file_path.relative_to(repo_path))
-                code_files[relative_path] = f.read()
-
-        return code_files
-    
-    def delete_repo(self, path: str):
-        import shutil, stat, os
+    def clone_repository(self, repo_url, branch='main'):
+        """
+        Clone a repository and return local path.
         
-        def onerror(func, p, exc):
-            os.chmod(p, stat.S_IWUSR)
-            func(p)
+        Args:
+            repo_url: GitHub repository URL
+            branch: Branch to clone (default: main)
             
-        if os.path.exists(path):
-            shutil.rmtree(path, onerror=onerror)
-    
-    def clean_up(self):
-        ## Removing all the cloned repos
-        import stat
+        Returns:
+            Path to cloned repository
+            
+        Raises:
+            RuntimeError: If clone fails
+        """
+        # Generate unique temp directory
+        repo_name = repo_url.split('/')[-1].replace('.git', '')
+        unique_id = os.urandom(8).hex()
+        local_path = self.temp_base / f"{repo_name}_{unique_id}"
 
-        def handle_remove_error(func, path, exc_info):
-            """Error handler for shutil.rmtree on Windows with locked files."""
-            if not os.access(path, os.W_OK):
-                os.chmod(path, stat.S_IWUSR | stat.S_IRUSR)
-                func(path)
-            else:
-                raise
+        # Ensure path doesn't exist
+        if local_path.exists():
+            self._safe_cleanup(str(local_path))
 
-        for path in self.cloned_paths:
-            if os.path.exists(path):
-                shutil.rmtree(path, onerror=handle_remove_error)
+        try:
+            logger.info(f"Cloning {repo_url} to {local_path}")
+            
+            # Try with specified branch first
+            try:
+                Repo.clone_from(
+                    repo_url,
+                    str(local_path),
+                    branch=branch,
+                    depth=50,
+                    timeout=120
+                )
+                logger.info(f"Successfully cloned {repo_url} (branch: {branch})")
+                return str(local_path)
+            except GitCommandError as e:
+                # If branch doesn't exist, try master
+                if 'not found in upstream' in str(e).lower() or 'unknown revision' in str(e).lower():
+                    logger.info(f"Branch {branch} not found, trying master")
+                    if local_path.exists():
+                        self._safe_cleanup(str(local_path))
+                    
+                    Repo.clone_from(
+                        repo_url,
+                        str(local_path),
+                        branch='master',
+                        depth=50,
+                        timeout=120
+                    )
+                    logger.info(f"Successfully cloned {repo_url} (branch: master)")
+                    return str(local_path)
+                else:
+                    raise
 
-        self.cloned_paths = []
+        except Exception as e:
+            logger.error(f"Clone failed for {repo_url}: {str(e)}")
+            if local_path.exists():
+                self._safe_cleanup(str(local_path))
+            raise RuntimeError(f"Failed to clone {repo_url}: {str(e)}")
+
+    def extract_commits(self, repo_path, limit=50):
+        """
+        Extract commit history from repository.
+        
+        Args:
+            repo_path: Path to cloned repository
+            limit: Maximum commits to extract
+            
+        Returns:
+            List of commit info dicts
+        """
+        try:
+            repo = Repo(repo_path)
+            commits = []
+
+            for i, commit in enumerate(repo.iter_commits()):
+                if i >= limit:
+                    break
+
+                try:
+                    commits.append({
+                        'hash': commit.hexsha,
+                        'author': commit.author.name,
+                        'message': commit.message,
+                        'diff': commit.diff(commit.parents[0] if commit.parents else 'HEAD^').raw_string if commit.parents else ''
+                    })
+                except Exception as e:
+                    logger.warning(f"Failed to extract commit {i}: {e}")
+                    continue
+
+            logger.info(f"Extracted {len(commits)} commits from {repo_path}")
+            return commits
+
+        except Exception as e:
+            logger.error(f"Failed to extract commits: {e}")
+            return []
+
+    def extract_source_files(self, repo_path, language='python'):
+        """
+        Extract source files from repository.
+        
+        Args:
+            repo_path: Path to cloned repository
+            language: Programming language filter
+            
+        Returns:
+            Dict of {filename: content}
+        """
+        files = {}
+        extensions = self.SUPPORTED_LANGUAGES.get(language.lower(), ['.py'])
+
+        try:
+            repo_path = Path(repo_path)
+            
+            # Skip common directories
+            skip_dirs = {'.git', '__pycache__', 'node_modules', '.venv', 'venv', 'dist', 'build', '.github'}
+
+            for file_path in repo_path.rglob('*'):
+                if not file_path.is_file():
+                    continue
+
+                # Skip if in skip directory
+                if any(skip_dir in file_path.parts for skip_dir in skip_dirs):
+                    continue
+
+                # Check extension
+                if file_path.suffix.lower() not in extensions:
+                    continue
+
+                # Skip large files (>1MB)
+                if file_path.stat().st_size > 1_000_000:
+                    logger.warning(f"Skipping large file: {file_path.name}")
+                    continue
+
+                try:
+                    content = file_path.read_text(encoding='utf-8', errors='ignore')
+                    if content.strip():  # Only include non-empty files
+                        files[str(file_path.relative_to(repo_path))] = content
+                except Exception as e:
+                    logger.warning(f"Failed to read {file_path}: {e}")
+                    continue
+
+            logger.info(f"Extracted {len(files)} source files from {repo_path}")
+            return files
+
+        except Exception as e:
+            logger.error(f"Failed to extract source files: {e}")
+            return {}
