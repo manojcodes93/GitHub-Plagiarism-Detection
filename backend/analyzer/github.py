@@ -15,25 +15,23 @@ class GitHubAnalyzer:
         self.cloned_paths = []
     
     def clone_repository(self, repo_url: str, branch: str = "main") -> str:
-        ## Cloning the GitHub repository locally
-
-        repo_name = repo_url.split("/")[-1].replace(".git", "")
-        repo_hash = hashlib.md5(repo_url.encode()).hexdigest()[:8]
-        unique_name = f"{repo_name}_{repo_hash}"
-
         repo_name = repo_url.split("/")[-1].replace(".git", "")
         repo_hash = hashlib.md5(repo_url.encode()).hexdigest()[:8]
 
-        # Always create a fresh temp directory
+        # Create a UNIQUE temp directory every time
         base_tmp = tempfile.mkdtemp(prefix="plagiarism_repo_")
         local_path = os.path.join(base_tmp, f"{repo_name}_{repo_hash}")
 
-        ## Cloning
+        # ✅ SAFETY: remove folder if it somehow exists (Windows edge-case)
+        if os.path.exists(local_path):
+            shutil.rmtree(local_path, ignore_errors=True)
+
         try:
             Repo.clone_from(repo_url, local_path, branch=branch, depth=50)
         except Exception:
+            # Fallback for repos using 'master'
             Repo.clone_from(repo_url, local_path, branch="master", depth=50)
-        
+
         self.cloned_paths.append(local_path)
         return local_path
     
