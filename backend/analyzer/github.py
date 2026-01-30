@@ -62,7 +62,7 @@ class GitHubAnalyzer:
             os.makedirs(local_path, exist_ok=True)
 
         try:
-            Repo.clone_from(repo_url, local_path, branch=branch, depth=50)
+            Repo.clone_from(repo_url, local_path, branch=branch, depth=50, multi_options=["--config", "core.fscache=false"])
         except Exception as e:
             # Fallback for repos using 'master'
             try:

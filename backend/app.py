@@ -21,7 +21,6 @@ from analyzer.github import GitHubAnalyzer
 from analyzer.preprocess import CodePreprocessor
 from analyzer.embeddings import EmbeddingGenerator
 from analyzer.similarity import SimilarityAnalyzer
-from analyzer.llm_reasoner import LLMReasoner
 
 # Setup logging
 logging.basicConfig(
@@ -39,7 +38,6 @@ app.config['UPLOAD_FOLDER'] = "./backend/reports"
 git_analyzer = GitHubAnalyzer()
 embedding_generator = EmbeddingGenerator()
 similarity_analyzer = SimilarityAnalyzer()
-llm_reasoner = LLMReasoner()
 
 # In-memory job tracking
 jobs = {}
@@ -57,7 +55,7 @@ def health_check():
     return jsonify({
         "status": "healthy",
         "embedding_model": embedding_generator.get_model_info(),
-        "llm_model": llm_reasoner.model_name if llm_reasoner.model else "not_loaded",
+        "mode": "deterministic (LLM disabled)"
     })
 
 
@@ -302,16 +300,6 @@ def _perform_analysis(
             except Exception as e:
                 logger.error(f"Embedding failed for {url}: {str(e)}")
                 raise RuntimeError(f"Embedding failed for {url}: {str(e)}")
-
-        # Step 6: Delete cloned repositories (all data extracted and cached)
-        logger.info("Step 6: Cleaning up cloned repositories...")
-        jobs[job_id]["progress"] = 60
-        try:
-            git_analyzer.clean_up()
-            logger.info("Cloned repositories cleaned up successfully")
-        except Exception as e:
-            logger.warning(f"Cleanup incomplete: {str(e)}")
-            # Continue anyway; data is already cached
         
         # Step 7: Compute similarity between candidate -> each reference
         logger.info("Step 7: Computing file-level similarity...")
@@ -424,33 +412,15 @@ def _perform_analysis(
                 logger.error(f"Comparison failed for {ref_url}: {str(e)}")
                 raise RuntimeError(f"Comparison failed: {str(e)}")
         
-        # Step 9: LLM reasoning on flagged references
-        logger.info("Step 9: Performing LLM-based reasoning...")
+        # Step 9: LLM reasoning DISABLED (safe mode)
+        logger.info("Step 9: Skipping LLM reasoning (safe mode)")
         jobs[job_id]["progress"] = 80
-        flagged_refs = [r for r in comparison_results if r["suspicious"]]
-
-        for pair in flagged_refs:
-            try:
-                # Defensive: ensure file pairs exist
-                file_pairs_to_judge = pair.get("file_pairs", [])
-                if not file_pairs_to_judge:
-                    logger.debug(f"No file pairs to judge for {pair['reference']}")
-                    pair["file_judgments"] = []
-                    pair["explanation"] = "No similar files detected for detailed analysis"
-                    continue
-
-                judgments = llm_reasoner.batch_judge_files(file_pairs_to_judge[:5])
-                pair["file_judgments"] = judgments
-                pair["explanation"] = llm_reasoner.generate_plagiarism_explanation(
-                    pair["candidate"].split("/")[-1],
-                    pair["reference"].split("/")[-1],
-                    file_pairs_to_judge,
-                    pair["repo_similarity"]
-                )
-            except Exception as e:
-                logger.warning(f"LLM reasoning failed: {str(e)}")
-                pair["file_judgments"] = []
-                pair["explanation"] = f"Analysis unavailable: {str(e)}"
+        for pair in comparison_results:
+            pair["file_judgments"] = []
+            pair["explanation"] = (
+                f"Repository similarity score: {pair['repo_similarity']:.2f}. "
+                f"{'Potential plagiarism detected' if pair['suspicious'] else 'No strong similarity detected.'}"
+            )
         
         # Step 10: Generate final report
         logger.info("Step 10: Generating report...")
@@ -486,6 +456,14 @@ def _perform_analysis(
         
         jobs[job_id]["progress"] = 100
         logger.info(f"Analysis complete for job {job_id}: {verdict}")
+
+        # FINAL cleanup – safe to delete repos only after report is ready
+        try:
+            git_analyzer.clean_up()
+            logger.info("Final cleanup completed")
+            
+        except Exception as e:
+            logger.warning(f"Final cleanup failed: {e}")
         
         return report
     
@@ -587,5 +565,5 @@ if __name__ == "__main__":
         logger.error("Failed to start: Missing dependencies")
         exit(1)
     
-    app.run(debug=True, host="0.0.0.0", port=5000, use_reloader=False)
+    app.run(debug=True, host="0.0.0.0", port=5000, threaded=True, use_reloader=False)
 
