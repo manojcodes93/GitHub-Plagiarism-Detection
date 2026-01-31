@@ -1,30 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>Detailed Plagiarism Report</h2>
+<h2>Side‑by‑Side Code Comparison</h2>
 
-<h3>File-Level Similarity</h3>
-<ul>
-    {% for file in data.files %}
-        <li>{{ file.name }} → {{ file.similarity }}</li>
-    {% endfor %}
-</ul>
+<p><strong>Highlighted lines indicate possible plagiarism</strong></p>
 
-<h3>Commit-Level Indicators</h3>
-<ul>
-    {% for commit in data.commits %}
-        <li>
-            Commit {{ commit.hash }} |
-            Lines Changed: {{ commit.lines }} |
-            Similarity: {{ commit.similarity }}
-        </li>
-    {% endfor %}
-</ul>
-
-<h3>Side-by-Side Code Comparison</h3>
 <div class="code-compare">
-    <pre>{{ data.code_left }}</pre>
-    <pre>{{ data.code_right }}</pre>
+    <pre class="code-block">{{ data.code_left | safe }}</pre>
+    <pre class="code-block">{{ data.code_right | safe }}</pre>
 </div>
 
 {% endblock %}

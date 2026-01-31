@@ -15,20 +15,13 @@ header {
     margin: 20px;
 }
 
-textarea, select, input, button {
+textarea,
+select,
+input,
+button {
     width: 100%;
     margin-top: 10px;
     padding: 8px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th, td {
-    border: 1px solid #ccc;
-    padding: 10px;
 }
 
 .code-compare {
@@ -36,9 +29,20 @@ th, td {
     gap: 10px;
 }
 
-pre {
+.code-block {
     width: 50%;
-    background: #eee;
+    background: #1e1e1e;
+    color: white;
     padding: 10px;
     overflow-x: auto;
+}
+
+.same {
+    background-color: rgba(255, 0, 0, 0.35); /* copied */
+    display: block;
+}
+
+.diff {
+    background-color: transparent;
+    display: block;
 }

@@ -1,5 +1,4 @@
 from flask import Blueprint, render_template, request
-from app.services.github_service import clone_repositories
 from app.services.report_generator import generate_report
 
 main = Blueprint("main", __name__)
@@ -11,7 +10,7 @@ def index():
         language = request.form.get("language")
         threshold = float(request.form.get("threshold"))
 
-        analysis_data = generate_report(repo_urls, language, threshold)
-        return render_template("dashboard.html", data=analysis_data)
+        data = generate_report(repo_urls, language, threshold)
+        return render_template("details.html", data=data)
 
     return render_template("index.html")
