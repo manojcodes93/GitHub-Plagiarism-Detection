@@ -4,7 +4,6 @@ from .services.report_generator import generate_report
 
 main = Blueprint("main", __name__)
 
-
 @main.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
@@ -16,15 +15,3 @@ def index():
         return render_template("details.html", data=data)
 
     return render_template("index.html")
-
-
-@main.route("/compare")
-def compare_view():
-    left = request.args.get("left", "")
-    right = request.args.get("right", "")
-
-    return render_template(
-        "compare.html",
-        left_code=left,
-        right_code=right
-    )

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Repository Similarity Matrix</h2>
+
+<table>
+    <tr>
+        <th>Repo</th>
+        {% for name in data.matrix_names %}
+            <th>{{ name }}</th>
+        {% endfor %}
+    </tr>
+
+    {% for row in data.similarity_matrix %}
+    <tr>
+        <th>{{ data.matrix_names[loop.index0] }}</th>
+        {% for s in row %}
+            <td>
+                {% if s is number %}
+                    {{ "%.2f"|format(s) }}
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
+
+<hr>
+
+<h2>Per‑File Similarity Matches</h2>
+
+<table>
+<tr>
+    <th>Repository A</th>
+    <th>Repository B</th>
+    <th>File Index A</th>
+    <th>File Index B</th>
+    <th>Similarity</th>
+</tr>
+
+{% for ra, rb, fa, fb, score in data.file_similarity_pairs %}
+<tr>
+    <td>{{ ra }}</td>
+    <td>{{ rb }}</td>
+    <td>{{ fa }}</td>
+    <td>{{ fb }}</td>
+    <td>{{ "%.2f"|format(score) }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<hr>
+
+<h2>Commit Message Similarity</h2>
+
+<table>
+<tr>
+    <th>Commit A</th>
+    <th>Commit B</th>
+    <th>Similarity</th>
+</tr>
+
+{% for item in data.suspicious_commits %}
+<tr>
+    <td>{{ item.commit_1 }}</td>
+    <td>{{ item.commit_2 }}</td>
+    <td>{{ "%.2f"|format(item.similarity) }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<hr>
+
+<h2>Repository Confidence Scores</h2>
+
+<table>
+<tr>
+    <th>Repo Pair</th>
+    <th>Confidence</th>
+</tr>
+
+{% for pair, score in data.repo_pair_confidence.items() %}
+<tr>
+    <td>{{ pair }}</td>
+    <td>{{ "%.2f"|format(score) }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<hr>
+
+<h2>Side‑by‑Side Code Proof (Top Match)</h2>
+
+<div class="code-compare">
+    <pre class="code-block">{{ data.code_left|safe }}</pre>
+    <pre class="code-block">{{ data.code_right|safe }}</pre>
+</div>
+
+<hr>
+
+<h2>Download Reports</h2>
+
+<a href="{{ data.csv_report }}">Download CSV</a><br>
+<a href="{{ data.pdf_report }}">Download PDF</a>
+
+{% endblock %}
