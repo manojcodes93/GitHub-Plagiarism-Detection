@@ -31,17 +31,14 @@ def generate_report(repo_urls, language, threshold):
     # SAFE file sampling per repo
     # -------------------------
     repo_file_texts = {}
-    repo_names = []
 
     for repo_path in repo_paths:
         repo_name = os.path.basename(repo_path)
-        repo_names.append(repo_name)
 
         collected = []
         file_count = 0
 
         for root, dirs, files in os.walk(repo_path):
-
             dirs[:] = [d for d in dirs if d not in Config.SKIP_DIRS]
 
             for file in files:
@@ -75,7 +72,7 @@ def generate_report(repo_urls, language, threshold):
     matrix_names, sim_matrix = compute_repo_similarity_matrix(repo_file_texts)
 
     matrix_table = []
-    for i, name in enumerate(matrix_names):
+    for i in range(len(matrix_names)):
         row = []
         for j in range(len(matrix_names)):
             if i == j:
@@ -85,7 +82,7 @@ def generate_report(repo_urls, language, threshold):
         matrix_table.append(row)
 
     # -------------------------
-    # File‑level similarity pairs
+    # File similarity pairs
     # -------------------------
     file_pairs = compute_file_similarity_pairs(
         repo_file_texts,
@@ -93,20 +90,20 @@ def generate_report(repo_urls, language, threshold):
     )
 
     # -------------------------
-    # Side‑by‑side demo diff
+    # Fallback pair (ALWAYS ensures side-by-side works)
     # -------------------------
     if file_pairs:
         ra, rb, fa, fb, score = file_pairs[0]
         left_code = repo_file_texts[ra][fa]
         right_code = repo_file_texts[rb][fb]
     else:
-        left_code = "print('sample A')"
-        right_code = "print('sample B')"
+        left_code = "print('fallback A')"
+        right_code = "print('fallback B')"
 
     left_html, right_html = generate_side_by_side_diff(left_code, right_code)
 
     # -------------------------
-    # Aggregate repo plagiarism score
+    # Repo pair confidence
     # -------------------------
     repo_pair_scores = {}
 
@@ -120,22 +117,19 @@ def generate_report(repo_urls, language, threshold):
     }
 
     # -------------------------
-    # Export reports
+    # Reports
     # -------------------------
     csv_path = generate_csv_report(suspicious_commits)
     pdf_path = generate_pdf_report(suspicious_commits)
 
     return {
         "suspicious_commits": suspicious_commits,
-        "code_left": left_html,
-        "code_right": right_html,
-        "csv_report": csv_path,
-        "pdf_report": pdf_path,
-        "analysis_note": "Large repositories analyzed with bounded sampling.",
-
-        # new features
-        "matrix_names": matrix_names,
-        "similarity_matrix": matrix_table,
+        "matrix_names": matrix_names,          # ✅ REQUIRED
+        "similarity_matrix": matrix_table,     # ✅ REQUIRED
         "file_similarity_pairs": file_pairs,
         "repo_pair_confidence": repo_pair_confidence,
+        "code_left": left_html,               # ✅ REQUIRED
+        "code_right": right_html,             # ✅ REQUIRED
+        "csv_report": csv_path,
+        "pdf_report": pdf_path,
     }

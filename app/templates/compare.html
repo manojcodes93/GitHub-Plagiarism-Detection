@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Side‑by‑Side Code Comparison</h2>
+
+<div class="code-compare">
+    <div class="code-block">
+        {{ left_html|safe }}
+    </div>
+
+    <div class="code-block">
+        {{ right_html|safe }}
+    </div>
+</div>
+
+{% endblock %}

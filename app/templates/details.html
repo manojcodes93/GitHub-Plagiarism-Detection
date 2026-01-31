@@ -4,27 +4,27 @@
 <h2>Repository Similarity Matrix</h2>
 
 <table>
-    <tr>
-        <th>Repo</th>
-        {% for name in data.matrix_names %}
-            <th>{{ name }}</th>
-        {% endfor %}
-    </tr>
-
-    {% for row in data.similarity_matrix %}
-    <tr>
-        <th>{{ data.matrix_names[loop.index0] }}</th>
-        {% for s in row %}
-            <td>
-                {% if s is number %}
-                    {{ "%.2f"|format(s) }}
-                {% else %}
-                    —
-                {% endif %}
-            </td>
-        {% endfor %}
-    </tr>
+<tr>
+    <th>Repo</th>
+    {% for name in data.matrix_names %}
+        <th>{{ name }}</th>
     {% endfor %}
+</tr>
+
+{% for row in data.similarity_matrix %}
+<tr>
+    <th>{{ data.matrix_names[loop.index0] }}</th>
+    {% for s in row %}
+        <td>
+            {% if s is number %}
+                {{ "%.2f"|format(s) }}
+            {% else %}
+                —
+            {% endif %}
+        </td>
+    {% endfor %}
+</tr>
+{% endfor %}
 </table>
 
 <hr>
@@ -33,10 +33,10 @@
 
 <table>
 <tr>
-    <th>Repo A</th>
-    <th>Repo B</th>
-    <th>File A</th>
-    <th>File B</th>
+    <th>Repository A</th>
+    <th>Repository B</th>
+    <th>File Index A</th>
+    <th>File Index B</th>
     <th>Similarity</th>
 </tr>
 
@@ -73,14 +73,21 @@
 
 <hr>
 
+<h2>Side‑by‑Side Code Comparison</h2>
+
+<a href="{{ url_for('main.compare_view') }}">
+    Open Code Compare Page
+</a>
+
+<hr>
+
 <h2>Download Reports</h2>
 
-<a href="{{ url_for('main.download_file', filename='plagiarism_report.csv') }}">
+<a href="{{ url_for('main.download_report', type='csv') }}">
     Download CSV
-</a>
-<br><br>
+</a><br>
 
-<a href="{{ url_for('main.download_file', filename='plagiarism_report.pdf') }}">
+<a href="{{ url_for('main.download_report', type='pdf') }}">
     Download PDF
 </a>
 
