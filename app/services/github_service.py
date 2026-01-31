@@ -7,7 +7,6 @@ CLONE_DIR = "data/cloned_repos"
 
 def clone_repositories(repo_urls):
     paths = []
-
     os.makedirs(CLONE_DIR, exist_ok=True)
 
     for url in repo_urls:
@@ -15,7 +14,16 @@ def clone_repositories(repo_urls):
         local_path = os.path.join(CLONE_DIR, repo_name)
 
         if not os.path.exists(local_path):
-            git.Repo.clone_from(url, local_path)
+            try:
+                # ✅ SAFE CLONE — no checkout (avoids Windows invalid filename errors)
+                git.Repo.clone_from(
+                    url,
+                    local_path,
+                    multi_options=["--no-checkout"]
+                )
+            except Exception as e:
+                print(f"[CLONE WARNING] {url} → {e}")
+                continue
 
         paths.append(local_path)
 
