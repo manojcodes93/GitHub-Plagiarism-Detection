@@ -3,33 +3,93 @@
 
 <h2>Commit Message Similarity Detection</h2>
 
-{% if data.suspicious_commits|length == 0 %}
-    <p>No suspicious commit messages detected.</p>
-{% else %}
 <table>
-    <tr>
-        <th>Commit Message A</th>
-        <th>Commit Message B</th>
-        <th>Similarity</th>
-    </tr>
-    {% for item in data.suspicious_commits %}
-    <tr>
-        <td>{{ item.commit_1 }}</td>
-        <td>{{ item.commit_2 }}</td>
-        <td>{{ item.similarity }}</td>
-    </tr>
-    {% endfor %}
+<tr>
+    <th>Commit Message A</th>
+    <th>Commit Message B</th>
+    <th>Similarity</th>
+</tr>
+{% for a,b,s in data.suspicious_commits %}
+<tr>
+    <td>{{a}}</td>
+    <td>{{b}}</td>
+    <td>{{"%.2f"|format(s)}}</td>
+</tr>
+{% endfor %}
 </table>
-{% endif %}
 
-<h3>Download Report</h3>
-<a href="/download/csv"><button>Download CSV</button></a>
-<a href="/download/pdf"><button>Download PDF</button></a>
+
+<h2>Repository Similarity Matrix</h2>
+
+<table>
+<tr>
+    <th>Repo</th>
+    {% for name in data.repo_names %}
+        <th>{{name}}</th>
+    {% endfor %}
+</tr>
+
+{% for i,row in enumerate(data.similarity_matrix) %}
+<tr>
+    <th>{{data.repo_names[i]}}</th>
+    {% for val in row %}
+        {% if val is none %}
+            <td>—</td>
+        {% else %}
+            <td>{{val}}</td>
+        {% endif %}
+    {% endfor %}
+</tr>
+{% endfor %}
+</table>
+
+
+<h2>Aggregate Repo Pair Confidence</h2>
+
+<table>
+<tr>
+    <th>Repo Pair</th>
+    <th>Confidence</th>
+</tr>
+{% for k,v in data.repo_pair_confidence.items() %}
+<tr>
+    <td>{{k}}</td>
+    <td>{{v}}</td>
+</tr>
+{% endfor %}
+</table>
+
+
+<h2>Per‑File Similarity Matches</h2>
+
+<table>
+<tr>
+    <th>Repo A</th>
+    <th>Repo B</th>
+    <th>File A #</th>
+    <th>File B #</th>
+    <th>Similarity</th>
+</tr>
+{% for ra,rb,fa,fb,score in data.file_similarity_pairs %}
+<tr>
+    <td>{{ra}}</td>
+    <td>{{rb}}</td>
+    <td>{{fa}}</td>
+    <td>{{fb}}</td>
+    <td>{{"%.2f"|format(score)}}</td>
+</tr>
+{% endfor %}
+</table>
+
 
 <h2>Side‑by‑Side Code Proof</h2>
 <div class="code-compare">
-    <pre class="code-block">{{ data.code_left | safe }}</pre>
-    <pre class="code-block">{{ data.code_right | safe }}</pre>
+    <pre>{{data.code_left|safe}}</pre>
+    <pre>{{data.code_right|safe}}</pre>
 </div>
+
+<br>
+<a href="/download/csv">Download CSV</a>
+<a href="/download/pdf">Download PDF</a>
 
 {% endblock %}
