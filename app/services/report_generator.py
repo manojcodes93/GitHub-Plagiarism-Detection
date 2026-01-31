@@ -2,47 +2,41 @@ import os
 
 from .github_service import clone_repositories, extract_commit_messages
 from .commit_message_similarity import compute_commit_message_similarity
-from .code_diff import generate_side_by_side_diff
+from .similarity import compute_repo_similarity_matrix, compute_file_similarity_pairs
 from .report_exporter import generate_csv_report, generate_pdf_report
-from .similarity import (
-    compute_repo_similarity_matrix,
-    compute_file_similarity_pairs,
-)
+from .code_diff import generate_side_by_side_diff
 from .preprocessing import preprocess_code
 from ..config import Config
 
 
 def generate_report(repo_urls, language, threshold):
 
+    # -------------------------
+    # Clone repos
+    # -------------------------
     repo_paths = clone_repositories(repo_urls)
 
-    # -------------------------
-    # Commit messages
-    # -------------------------
-    all_commit_messages = []
-
-    for path in repo_paths:
-        all_commit_messages.extend(extract_commit_messages(path))
-
-    suspicious_commits = compute_commit_message_similarity(
-        all_commit_messages,
-        threshold=0.6
-    )
-
-    # -------------------------
-    # File sampling
-    # -------------------------
     repo_file_texts = {}
+    repo_processed_joined = {}
 
+    # -------------------------
+    # Collect files
+    # -------------------------
     for repo_path in repo_paths:
+
         repo_name = os.path.basename(repo_path)
-        collected = []
+
+        processed_list = []
+        raw_list = []
+
         count = 0
 
         for root, dirs, files in os.walk(repo_path):
+
             dirs[:] = [d for d in dirs if d not in Config.SKIP_DIRS]
 
             for file in files:
+
                 if not file.endswith(language):
                     continue
 
@@ -58,7 +52,8 @@ def generate_report(repo_urls, language, threshold):
                     processed = preprocess_code(raw)
 
                     if len(processed) > 30:
-                        collected.append(processed)
+                        processed_list.append(processed)
+                        raw_list.append(raw)
                         count += 1
 
                 except:
@@ -70,12 +65,15 @@ def generate_report(repo_urls, language, threshold):
             if count >= Config.MAX_FILES_PER_REPO:
                 break
 
-        repo_file_texts[repo_name] = collected
+        repo_file_texts[repo_name] = raw_list
+        repo_processed_joined[repo_name] = "\n".join(processed_list)
 
     # -------------------------
-    # Repo matrix
+    # Repo similarity matrix ✅ FIXED (DICT INPUT)
     # -------------------------
-    matrix_names, sim_matrix = compute_repo_similarity_matrix(repo_file_texts)
+    matrix_names, sim_matrix = compute_repo_similarity_matrix(
+        repo_processed_joined
+    )
 
     matrix_table = []
     for i in range(len(matrix_names)):
@@ -83,6 +81,18 @@ def generate_report(repo_urls, language, threshold):
         for j in range(len(matrix_names)):
             row.append(None if i == j else round(float(sim_matrix[i][j]), 3))
         matrix_table.append(row)
+
+    # -------------------------
+    # Commit similarity
+    # -------------------------
+    all_commits = []
+    for path in repo_paths:
+        all_commits.extend(extract_commit_messages(path))
+
+    suspicious_commits = compute_commit_message_similarity(
+        all_commits,
+        threshold=0.6
+    )
 
     # -------------------------
     # File similarity pairs
@@ -93,23 +103,23 @@ def generate_report(repo_urls, language, threshold):
     )
 
     # -------------------------
-    # SAFE side‑by‑side selection (FIX)
+    # Side‑by‑side code
     # -------------------------
-    left_code = ""
-    right_code = ""
+    left_html = None
+    right_html = None
 
     if file_pairs:
         try:
             ra, rb, fa, fb, score = file_pairs[0]
-            left_code = repo_file_texts.get(ra, [""])[fa]
-            right_code = repo_file_texts.get(rb, [""])[fb]
-        except Exception:
-            pass
+            left_code = repo_file_texts[ra][fa]
+            right_code = repo_file_texts[rb][fb]
 
-    code_left_html, code_right_html = generate_side_by_side_diff(
-        left_code,
-        right_code
-    )
+            left_html, right_html = generate_side_by_side_diff(
+                left_code,
+                right_code
+            )
+        except:
+            pass
 
     # -------------------------
     # Export reports
@@ -117,14 +127,18 @@ def generate_report(repo_urls, language, threshold):
     csv_path = generate_csv_report(suspicious_commits)
     pdf_path = generate_pdf_report(suspicious_commits)
 
+    # -------------------------
+    # Final dict
+    # -------------------------
     return {
-        "suspicious_commits": suspicious_commits,
         "matrix_names": matrix_names,
         "similarity_matrix": matrix_table,
+        "suspicious_commits": suspicious_commits,
         "file_similarity_pairs": file_pairs,
-        "code_left": code_left_html,
-        "code_right": code_right_html,
+
+        "code_left": left_html,
+        "code_right": right_html,
+
         "csv_report": csv_path,
         "pdf_report": pdf_path,
-        "analysis_note": "Large repositories analyzed with bounded sampling.",
     }

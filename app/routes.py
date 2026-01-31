@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, send_file, redirect, url_
 import os
 
 from .services.report_generator import generate_report
+from .services.code_diff import generate_side_by_side_diff
 
 main = Blueprint("main", __name__)
 
@@ -17,7 +18,7 @@ def dashboard():
 
 
 # -------------------------
-# Analyze page
+# Analyze
 # -------------------------
 @main.route("/analyze", methods=["GET", "POST"])
 def analyze():
@@ -43,7 +44,7 @@ def analyze():
 
 
 # -------------------------
-# Results hub (NEW — safe empty state)
+# Results hub
 # -------------------------
 @main.route("/results")
 def results_home():
@@ -74,14 +75,39 @@ def repo_matrix_page():
 
 
 # -------------------------
-# Side by side compare (SAFE EMPTY STATE)
+# Side‑by‑side compare — SAFE FIX
 # -------------------------
 @main.route("/compare")
 def compare_view():
+
+    left_html = LAST_REPORT.get("code_left")
+    right_html = LAST_REPORT.get("code_right")
+
+    # ✅ fallback if missing
+    if not left_html or not right_html:
+        pairs = LAST_REPORT.get("file_similarity_pairs", [])
+
+        if pairs:
+            ra, rb, fa, fb, score = pairs[0]
+            repo_texts = LAST_REPORT.get("repo_file_texts", {})
+
+            try:
+                left_code = repo_texts[ra][fa]
+                right_code = repo_texts[rb][fb]
+                left_html, right_html = generate_side_by_side_diff(
+                    left_code, right_code
+                )
+            except Exception:
+                left_html = "<p>No code available</p>"
+                right_html = "<p>No code available</p>"
+        else:
+            left_html = "<p>No comparison data yet</p>"
+            right_html = "<p>No comparison data yet</p>"
+
     return render_template(
         "compare.html",
-        left_html=LAST_REPORT.get("code_left", "<p>No comparison yet</p>"),
-        right_html=LAST_REPORT.get("code_right", "<p>No comparison yet</p>")
+        left_html=left_html,
+        right_html=right_html
     )
 
 
