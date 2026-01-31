@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, send_from_directory
+import os
 
 from .services.report_generator import generate_report
 
@@ -15,3 +16,9 @@ def index():
         return render_template("details.html", data=data)
 
     return render_template("index.html")
+
+
+@main.route("/download/<filename>")
+def download_file(filename):
+    reports_dir = os.path.abspath("data/reports")
+    return send_from_directory(reports_dir, filename, as_attachment=True)

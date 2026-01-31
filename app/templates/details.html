@@ -33,10 +33,10 @@
 
 <table>
 <tr>
-    <th>Repository A</th>
-    <th>Repository B</th>
-    <th>File Index A</th>
-    <th>File Index B</th>
+    <th>Repo A</th>
+    <th>Repo B</th>
+    <th>File A</th>
+    <th>File B</th>
     <th>Similarity</th>
 </tr>
 
@@ -73,36 +73,15 @@
 
 <hr>
 
-<h2>Repository Confidence Scores</h2>
-
-<table>
-<tr>
-    <th>Repo Pair</th>
-    <th>Confidence</th>
-</tr>
-
-{% for pair, score in data.repo_pair_confidence.items() %}
-<tr>
-    <td>{{ pair }}</td>
-    <td>{{ "%.2f"|format(score) }}</td>
-</tr>
-{% endfor %}
-</table>
-
-<hr>
-
-<h2>Side‑by‑Side Code Proof (Top Match)</h2>
-
-<div class="code-compare">
-    <pre class="code-block">{{ data.code_left|safe }}</pre>
-    <pre class="code-block">{{ data.code_right|safe }}</pre>
-</div>
-
-<hr>
-
 <h2>Download Reports</h2>
 
-<a href="{{ data.csv_report }}">Download CSV</a><br>
-<a href="{{ data.pdf_report }}">Download PDF</a>
+<a href="{{ url_for('main.download_file', filename='plagiarism_report.csv') }}">
+    Download CSV
+</a>
+<br><br>
+
+<a href="{{ url_for('main.download_file', filename='plagiarism_report.pdf') }}">
+    Download PDF
+</a>
 
 {% endblock %}
