@@ -4,62 +4,80 @@
 <h2>Repository Similarity Matrix</h2>
 
 <table>
-    <tr>
-        <th>Repo</th>
-        {% for name in data.matrix_names %}
-            <th>{{ name }}</th>
-        {% endfor %}
-    </tr>
-
-    {% for row in data.similarity_matrix %}
-    <tr>
-        <th>{{ data.matrix_names[loop.index0] }}</th>
-        {% for s in row %}
-            <td>
-                {% if s is number %}
-                    {{ "%.2f"|format(s) }}
-                {% else %}
-                    {{ s }}
-                {% endif %}
-            </td>
-        {% endfor %}
-    </tr>
-    {% endfor %}
-</table>
-
-<hr>
-
-<h2>Commit Message Similarity Detection</h2>
-
-<table>
 <tr>
-    <th>Commit Message A</th>
-    <th>Commit Message B</th>
-    <th>Similarity</th>
+    <th>Repo</th>
+    {% for name in data.matrix_names %}
+        <th>{{ name }}</th>
+    {% endfor %}
 </tr>
 
-{% for item in data.commit_similarities %}
+{% for row in data.similarity_matrix %}
 <tr>
-    <td>{{ item.a }}</td>
-    <td>{{ item.b }}</td>
-    <td>{{ "%.2f"|format(item.score) }}</td>
+    <th>{{ data.matrix_names[loop.index0] }}</th>
+    {% for s in row %}
+        <td style="
+            background-color:
+            {% if s is number %}
+                rgba(255,0,0,{{ s }})
+            {% else %}
+                #eee
+            {% endif %}
+        ">
+        {% if s is number %}
+            {{ "%.2f"|format(s) }}
+        {% else %}
+            —
+        {% endif %}
+        </td>
+    {% endfor %}
 </tr>
 {% endfor %}
 </table>
 
 <hr>
 
-<h2>Side‑by‑Side Code Proof</h2>
+<h2>Repository Confidence Scores</h2>
 
-<div class="code-compare">
-<pre>{{ data.code_a }}</pre>
-<pre>{{ data.code_b }}</pre>
-</div>
+<table>
+<tr><th>Repo Pair</th><th>Confidence</th></tr>
+{% for pair, score in data.repo_pair_confidence.items() %}
+<tr>
+    <td>{{ pair }}</td>
+    <td>{{ "%.2f"|format(score) }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<hr>
+
+<h2>Flagged File Matches</h2>
+
+<table>
+<tr>
+    <th>Repo A</th>
+    <th>Repo B</th>
+    <th>Similarity</th>
+    <th>Proof</th>
+</tr>
+
+{% for ra, rb, fa, fb, score in data.file_similarity_pairs %}
+<tr>
+    <td>{{ ra }}</td>
+    <td>{{ rb }}</td>
+    <td>{{ "%.2f"|format(score) }}</td>
+    <td>
+        <a href="/compare?left={{ data.code_left|urlencode }}&right={{ data.code_right|urlencode }}">
+            <button>View Code Proof</button>
+        </a>
+    </td>
+</tr>
+{% endfor %}
+</table>
 
 <hr>
 
 <h2>Download Report</h2>
-<a href="/download/csv">Download CSV</a>
-<a href="/download/pdf">Download PDF</a>
+<a href="{{ data.csv_report }}">Download CSV</a>
+<a href="{{ data.pdf_report }}">Download PDF</a>
 
 {% endblock %}

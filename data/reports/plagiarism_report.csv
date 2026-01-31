@@ -1,1276 +1,4 @@
 Commit Message A,Commit Message B,Similarity
-"Merge pull request #3126 from N9sha18/main
-
-feat: add image compression script using Pillow",feat: add image compression script using Pillow,0.81
-"Bump openai from 2.14.0 to 2.15.0
-
-Bumps [openai](https://github.com/openai/openai-python) from 2.14.0 to 2.15.0.
-- [Release notes](https://github.com/openai/openai-python/releases)
-- [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/openai/openai-python/compare/v2.14.0...v2.15.0)
-
----
-updated-dependencies:
-- dependency-name: openai
-  dependency-version: 2.15.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump openai from 2.12.0 to 2.14.0
-
-Bumps [openai](https://github.com/openai/openai-python) from 2.12.0 to 2.14.0.
-- [Release notes](https://github.com/openai/openai-python/releases)
-- [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/openai/openai-python/compare/v2.12.0...v2.14.0)
-
----
-updated-dependencies:
-- dependency-name: openai
-  dependency-version: 2.14.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.93
-"Bump openai from 2.14.0 to 2.15.0
-
-Bumps [openai](https://github.com/openai/openai-python) from 2.14.0 to 2.15.0.
-- [Release notes](https://github.com/openai/openai-python/releases)
-- [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/openai/openai-python/compare/v2.14.0...v2.15.0)
-
----
-updated-dependencies:
-- dependency-name: openai
-  dependency-version: 2.15.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump openai from 2.9.0 to 2.12.0
-
-Bumps [openai](https://github.com/openai/openai-python) from 2.9.0 to 2.12.0.
-- [Release notes](https://github.com/openai/openai-python/releases)
-- [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/openai/openai-python/compare/v2.9.0...v2.12.0)
-
----
-updated-dependencies:
-- dependency-name: openai
-  dependency-version: 2.12.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.89
-"Bump openai from 2.14.0 to 2.15.0
-
-Bumps [openai](https://github.com/openai/openai-python) from 2.14.0 to 2.15.0.
-- [Release notes](https://github.com/openai/openai-python/releases)
-- [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/openai/openai-python/compare/v2.14.0...v2.15.0)
-
----
-updated-dependencies:
-- dependency-name: openai
-  dependency-version: 2.15.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump openai from 2.8.1 to 2.9.0
-
-Bumps [openai](https://github.com/openai/openai-python) from 2.8.1 to 2.9.0.
-- [Release notes](https://github.com/openai/openai-python/releases)
-- [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/openai/openai-python/compare/v2.8.1...v2.9.0)
-
----
-updated-dependencies:
-- dependency-name: openai
-  dependency-version: 2.9.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.93
-"Bump openai from 2.14.0 to 2.15.0
-
-Bumps [openai](https://github.com/openai/openai-python) from 2.14.0 to 2.15.0.
-- [Release notes](https://github.com/openai/openai-python/releases)
-- [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/openai/openai-python/compare/v2.14.0...v2.15.0)
-
----
-updated-dependencies:
-- dependency-name: openai
-  dependency-version: 2.15.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump openai from 2.7.1 to 2.8.1
-
-Bumps [openai](https://github.com/openai/openai-python) from 2.7.1 to 2.8.1.
-- [Release notes](https://github.com/openai/openai-python/releases)
-- [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/openai/openai-python/compare/v2.7.1...v2.8.1)
-
----
-updated-dependencies:
-- dependency-name: openai
-  dependency-version: 2.8.1
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.93
-"Merge pull request #3125 from geekcomputers/dependabot/pip/google-api-python-client-2.188.0
-
-Bump google-api-python-client from 2.187.0 to 2.188.0","Bump google-api-python-client from 2.187.0 to 2.188.0
-
-Bumps [google-api-python-client](https://github.com/googleapis/google-api-python-client) from 2.187.0 to 2.188.0.
-- [Release notes](https://github.com/googleapis/google-api-python-client/releases)
-- [Commits](https://github.com/googleapis/google-api-python-client/compare/v2.187.0...v2.188.0)
-
----
-updated-dependencies:
-- dependency-name: google-api-python-client
-  dependency-version: 2.188.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.85
-"Bump google-api-python-client from 2.187.0 to 2.188.0
-
-Bumps [google-api-python-client](https://github.com/googleapis/google-api-python-client) from 2.187.0 to 2.188.0.
-- [Release notes](https://github.com/googleapis/google-api-python-client/releases)
-- [Commits](https://github.com/googleapis/google-api-python-client/compare/v2.187.0...v2.188.0)
-
----
-updated-dependencies:
-- dependency-name: google-api-python-client
-  dependency-version: 2.188.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump google-api-python-client from 2.186.0 to 2.187.0
-
-Bumps [google-api-python-client](https://github.com/googleapis/google-api-python-client) from 2.186.0 to 2.187.0.
-- [Release notes](https://github.com/googleapis/google-api-python-client/releases)
-- [Commits](https://github.com/googleapis/google-api-python-client/compare/v2.186.0...v2.187.0)
-
----
-updated-dependencies:
-- dependency-name: google-api-python-client
-  dependency-version: 2.187.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.92
-"Merge pull request #3123 from geekcomputers/dependabot/pip/keras-3.13.1
-
-Bump keras from 3.13.0 to 3.13.1","Merge pull request #3098 from geekcomputers/dependabot/pip/keras-3.13.0
-
-Bump keras from 3.12.0 to 3.13.0",0.84
-"Bump keras from 3.13.0 to 3.13.1
-
-Bumps [keras](https://github.com/keras-team/keras) from 3.13.0 to 3.13.1.
-- [Release notes](https://github.com/keras-team/keras/releases)
-- [Commits](https://github.com/keras-team/keras/compare/v3.13.0...v3.13.1)
-
----
-updated-dependencies:
-- dependency-name: keras
-  dependency-version: 3.13.1
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump keras from 3.12.0 to 3.13.0
-
-Bumps [keras](https://github.com/keras-team/keras) from 3.12.0 to 3.13.0.
-- [Release notes](https://github.com/keras-team/keras/releases)
-- [Commits](https://github.com/keras-team/keras/compare/v3.12.0...v3.13.0)
-
----
-updated-dependencies:
-- dependency-name: keras
-  dependency-version: 3.13.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.95
-"Bump twilio from 9.9.0 to 9.9.1
-
-Bumps [twilio](https://github.com/twilio/twilio-python) from 9.9.0 to 9.9.1.
-- [Release notes](https://github.com/twilio/twilio-python/releases)
-- [Changelog](https://github.com/twilio/twilio-python/blob/main/CHANGES.md)
-- [Commits](https://github.com/twilio/twilio-python/compare/9.9.0...9.9.1)
-
----
-updated-dependencies:
-- dependency-name: twilio
-  dependency-version: 9.9.1
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump twilio from 9.8.8 to 9.9.0
-
-Bumps [twilio](https://github.com/twilio/twilio-python) from 9.8.8 to 9.9.0.
-- [Release notes](https://github.com/twilio/twilio-python/releases)
-- [Changelog](https://github.com/twilio/twilio-python/blob/main/CHANGES.md)
-- [Commits](https://github.com/twilio/twilio-python/compare/9.8.8...9.9.0)
-
----
-updated-dependencies:
-- dependency-name: twilio
-  dependency-version: 9.9.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",1.0
-"Bump twilio from 9.9.0 to 9.9.1
-
-Bumps [twilio](https://github.com/twilio/twilio-python) from 9.9.0 to 9.9.1.
-- [Release notes](https://github.com/twilio/twilio-python/releases)
-- [Changelog](https://github.com/twilio/twilio-python/blob/main/CHANGES.md)
-- [Commits](https://github.com/twilio/twilio-python/compare/9.9.0...9.9.1)
-
----
-updated-dependencies:
-- dependency-name: twilio
-  dependency-version: 9.9.1
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump twilio from 9.8.5 to 9.8.8
-
-Bumps [twilio](https://github.com/twilio/twilio-python) from 9.8.5 to 9.8.8.
-- [Release notes](https://github.com/twilio/twilio-python/releases)
-- [Changelog](https://github.com/twilio/twilio-python/blob/main/CHANGES.md)
-- [Commits](https://github.com/twilio/twilio-python/compare/9.8.5...9.8.8)
-
----
-updated-dependencies:
-- dependency-name: twilio
-  dependency-version: 9.8.8
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",1.0
-"Bump urllib3 from 2.6.2 to 2.6.3
-
-Bumps [urllib3](https://github.com/urllib3/urllib3) from 2.6.2 to 2.6.3.
-- [Release notes](https://github.com/urllib3/urllib3/releases)
-- [Changelog](https://github.com/urllib3/urllib3/blob/main/CHANGES.rst)
-- [Commits](https://github.com/urllib3/urllib3/compare/2.6.2...2.6.3)
-
----
-updated-dependencies:
-- dependency-name: urllib3
-  dependency-version: 2.6.3
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump urllib3 from 2.5.0 to 2.6.2
-
-Bumps [urllib3](https://github.com/urllib3/urllib3) from 2.5.0 to 2.6.2.
-- [Release notes](https://github.com/urllib3/urllib3/releases)
-- [Changelog](https://github.com/urllib3/urllib3/blob/main/CHANGES.rst)
-- [Commits](https://github.com/urllib3/urllib3/compare/2.5.0...2.6.2)
-
----
-updated-dependencies:
-- dependency-name: urllib3
-  dependency-version: 2.6.2
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",1.0
-"Bump ccxt from 4.5.30 to 4.5.31
-
-Bumps [ccxt](https://github.com/ccxt/ccxt) from 4.5.30 to 4.5.31.
-- [Release notes](https://github.com/ccxt/ccxt/releases)
-- [Commits](https://github.com/ccxt/ccxt/compare/v4.5.30...v4.5.31)
-
----
-updated-dependencies:
-- dependency-name: ccxt
-  dependency-version: 4.5.31
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump ccxt from 4.5.29 to 4.5.30
-
-Bumps [ccxt](https://github.com/ccxt/ccxt) from 4.5.29 to 4.5.30.
-- [Release notes](https://github.com/ccxt/ccxt/releases)
-- [Commits](https://github.com/ccxt/ccxt/compare/v4.5.29...v4.5.30)
-
----
-updated-dependencies:
-- dependency-name: ccxt
-  dependency-version: 4.5.30
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.85
-"Bump fastapi from 0.124.4 to 0.128.0
-
-Bumps [fastapi](https://github.com/fastapi/fastapi) from 0.124.4 to 0.128.0.
-- [Release notes](https://github.com/fastapi/fastapi/releases)
-- [Commits](https://github.com/fastapi/fastapi/compare/0.124.4...0.128.0)
-
----
-updated-dependencies:
-- dependency-name: fastapi
-  dependency-version: 0.128.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump fastapi from 0.123.4 to 0.124.4
-
-Bumps [fastapi](https://github.com/fastapi/fastapi) from 0.123.4 to 0.124.4.
-- [Release notes](https://github.com/fastapi/fastapi/releases)
-- [Commits](https://github.com/fastapi/fastapi/compare/0.123.4...0.124.4)
-
----
-updated-dependencies:
-- dependency-name: fastapi
-  dependency-version: 0.124.4
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.85
-"Bump ccxt from 4.5.29 to 4.5.30
-
-Bumps [ccxt](https://github.com/ccxt/ccxt) from 4.5.29 to 4.5.30.
-- [Release notes](https://github.com/ccxt/ccxt/releases)
-- [Commits](https://github.com/ccxt/ccxt/compare/v4.5.29...v4.5.30)
-
----
-updated-dependencies:
-- dependency-name: ccxt
-  dependency-version: 4.5.30
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump ccxt from 4.5.28 to 4.5.29
-
-Bumps [ccxt](https://github.com/ccxt/ccxt) from 4.5.28 to 4.5.29.
-- [Release notes](https://github.com/ccxt/ccxt/releases)
-- [Commits](https://github.com/ccxt/ccxt/compare/v4.5.28...v4.5.29)
-
----
-updated-dependencies:
-- dependency-name: ccxt
-  dependency-version: 4.5.29
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.85
-"Bump openai from 2.12.0 to 2.14.0
-
-Bumps [openai](https://github.com/openai/openai-python) from 2.12.0 to 2.14.0.
-- [Release notes](https://github.com/openai/openai-python/releases)
-- [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/openai/openai-python/compare/v2.12.0...v2.14.0)
-
----
-updated-dependencies:
-- dependency-name: openai
-  dependency-version: 2.14.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump openai from 2.9.0 to 2.12.0
-
-Bumps [openai](https://github.com/openai/openai-python) from 2.9.0 to 2.12.0.
-- [Release notes](https://github.com/openai/openai-python/releases)
-- [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/openai/openai-python/compare/v2.9.0...v2.12.0)
-
----
-updated-dependencies:
-- dependency-name: openai
-  dependency-version: 2.12.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.95
-"Bump openai from 2.12.0 to 2.14.0
-
-Bumps [openai](https://github.com/openai/openai-python) from 2.12.0 to 2.14.0.
-- [Release notes](https://github.com/openai/openai-python/releases)
-- [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/openai/openai-python/compare/v2.12.0...v2.14.0)
-
----
-updated-dependencies:
-- dependency-name: openai
-  dependency-version: 2.14.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump openai from 2.8.1 to 2.9.0
-
-Bumps [openai](https://github.com/openai/openai-python) from 2.8.1 to 2.9.0.
-- [Release notes](https://github.com/openai/openai-python/releases)
-- [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/openai/openai-python/compare/v2.8.1...v2.9.0)
-
----
-updated-dependencies:
-- dependency-name: openai
-  dependency-version: 2.9.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.93
-"Bump openai from 2.12.0 to 2.14.0
-
-Bumps [openai](https://github.com/openai/openai-python) from 2.12.0 to 2.14.0.
-- [Release notes](https://github.com/openai/openai-python/releases)
-- [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/openai/openai-python/compare/v2.12.0...v2.14.0)
-
----
-updated-dependencies:
-- dependency-name: openai
-  dependency-version: 2.14.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump openai from 2.7.1 to 2.8.1
-
-Bumps [openai](https://github.com/openai/openai-python) from 2.7.1 to 2.8.1.
-- [Release notes](https://github.com/openai/openai-python/releases)
-- [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/openai/openai-python/compare/v2.7.1...v2.8.1)
-
----
-updated-dependencies:
-- dependency-name: openai
-  dependency-version: 2.8.1
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.93
-"Bump solara from 1.55.1 to 1.56.0
-
-Bumps [solara](https://github.com/widgetti/solara) from 1.55.1 to 1.56.0.
-- [Changelog](https://github.com/widgetti/solara/blob/master/CHANGELOG.md)
-- [Commits](https://github.com/widgetti/solara/compare/v1.55.1...v1.56.0)
-
----
-updated-dependencies:
-- dependency-name: solara
-  dependency-version: 1.56.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump solara from 1.54.0 to 1.55.1
-
-Bumps [solara](https://github.com/widgetti/solara) from 1.54.0 to 1.55.1.
-- [Changelog](https://github.com/widgetti/solara/blob/master/CHANGELOG.md)
-- [Commits](https://github.com/widgetti/solara/compare/v1.54.0...v1.55.1)
-
----
-updated-dependencies:
-- dependency-name: solara
-  dependency-version: 1.55.1
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.84
-"Bump twilio from 9.8.8 to 9.9.0
-
-Bumps [twilio](https://github.com/twilio/twilio-python) from 9.8.8 to 9.9.0.
-- [Release notes](https://github.com/twilio/twilio-python/releases)
-- [Changelog](https://github.com/twilio/twilio-python/blob/main/CHANGES.md)
-- [Commits](https://github.com/twilio/twilio-python/compare/9.8.8...9.9.0)
-
----
-updated-dependencies:
-- dependency-name: twilio
-  dependency-version: 9.9.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump twilio from 9.8.5 to 9.8.8
-
-Bumps [twilio](https://github.com/twilio/twilio-python) from 9.8.5 to 9.8.8.
-- [Release notes](https://github.com/twilio/twilio-python/releases)
-- [Changelog](https://github.com/twilio/twilio-python/blob/main/CHANGES.md)
-- [Commits](https://github.com/twilio/twilio-python/compare/9.8.5...9.8.8)
-
----
-updated-dependencies:
-- dependency-name: twilio
-  dependency-version: 9.8.8
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",1.0
-"Bump numpy from 2.3.5 to 2.4.0
-
-Bumps [numpy](https://github.com/numpy/numpy) from 2.3.5 to 2.4.0.
-- [Release notes](https://github.com/numpy/numpy/releases)
-- [Changelog](https://github.com/numpy/numpy/blob/main/doc/RELEASE_WALKTHROUGH.rst)
-- [Commits](https://github.com/numpy/numpy/compare/v2.3.5...v2.4.0)
-
----
-updated-dependencies:
-- dependency-name: numpy
-  dependency-version: 2.4.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump numpy from 2.3.4 to 2.3.5
-
-Bumps [numpy](https://github.com/numpy/numpy) from 2.3.4 to 2.3.5.
-- [Release notes](https://github.com/numpy/numpy/releases)
-- [Changelog](https://github.com/numpy/numpy/blob/main/doc/RELEASE_WALKTHROUGH.rst)
-- [Commits](https://github.com/numpy/numpy/compare/v2.3.4...v2.3.5)
-
----
-updated-dependencies:
-- dependency-name: numpy
-  dependency-version: 2.3.5
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",1.0
-"Bump ccxt from 4.5.28 to 4.5.29
-
-Bumps [ccxt](https://github.com/ccxt/ccxt) from 4.5.28 to 4.5.29.
-- [Release notes](https://github.com/ccxt/ccxt/releases)
-- [Commits](https://github.com/ccxt/ccxt/compare/v4.5.28...v4.5.29)
-
----
-updated-dependencies:
-- dependency-name: ccxt
-  dependency-version: 4.5.29
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump ccxt from 4.5.27 to 4.5.28
-
-Bumps [ccxt](https://github.com/ccxt/ccxt) from 4.5.27 to 4.5.28.
-- [Release notes](https://github.com/ccxt/ccxt/releases)
-- [Commits](https://github.com/ccxt/ccxt/compare/v4.5.27...v4.5.28)
-
----
-updated-dependencies:
-- dependency-name: ccxt
-  dependency-version: 4.5.28
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.85
-"Bump tornado from 6.5.3 to 6.5.4
-
-Bumps [tornado](https://github.com/tornadoweb/tornado) from 6.5.3 to 6.5.4.
-- [Changelog](https://github.com/tornadoweb/tornado/blob/v6.5.4/docs/releases.rst)
-- [Commits](https://github.com/tornadoweb/tornado/compare/v6.5.3...v6.5.4)
-
----
-updated-dependencies:
-- dependency-name: tornado
-  dependency-version: 6.5.4
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump tornado from 6.5.2 to 6.5.3
-
-Bumps [tornado](https://github.com/tornadoweb/tornado) from 6.5.2 to 6.5.3.
-- [Changelog](https://github.com/tornadoweb/tornado/blob/master/docs/releases.rst)
-- [Commits](https://github.com/tornadoweb/tornado/compare/v6.5.2...v6.5.3)
-
----
-updated-dependencies:
-- dependency-name: tornado
-  dependency-version: 6.5.3
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.99
-Merge branch 'geekcomputers:master' into mr-temp,Merge branch 'geekcomputers:master' into mr-temp,1.0
-"Bump openai from 2.9.0 to 2.12.0
-
-Bumps [openai](https://github.com/openai/openai-python) from 2.9.0 to 2.12.0.
-- [Release notes](https://github.com/openai/openai-python/releases)
-- [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/openai/openai-python/compare/v2.9.0...v2.12.0)
-
----
-updated-dependencies:
-- dependency-name: openai
-  dependency-version: 2.12.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump openai from 2.8.1 to 2.9.0
-
-Bumps [openai](https://github.com/openai/openai-python) from 2.8.1 to 2.9.0.
-- [Release notes](https://github.com/openai/openai-python/releases)
-- [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/openai/openai-python/compare/v2.8.1...v2.9.0)
-
----
-updated-dependencies:
-- dependency-name: openai
-  dependency-version: 2.9.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.96
-"Bump openai from 2.9.0 to 2.12.0
-
-Bumps [openai](https://github.com/openai/openai-python) from 2.9.0 to 2.12.0.
-- [Release notes](https://github.com/openai/openai-python/releases)
-- [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/openai/openai-python/compare/v2.9.0...v2.12.0)
-
----
-updated-dependencies:
-- dependency-name: openai
-  dependency-version: 2.12.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump openai from 2.7.1 to 2.8.1
-
-Bumps [openai](https://github.com/openai/openai-python) from 2.7.1 to 2.8.1.
-- [Release notes](https://github.com/openai/openai-python/releases)
-- [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/openai/openai-python/compare/v2.7.1...v2.8.1)
-
----
-updated-dependencies:
-- dependency-name: openai
-  dependency-version: 2.8.1
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.96
-"Bump ccxt from 4.5.27 to 4.5.28
-
-Bumps [ccxt](https://github.com/ccxt/ccxt) from 4.5.27 to 4.5.28.
-- [Release notes](https://github.com/ccxt/ccxt/releases)
-- [Commits](https://github.com/ccxt/ccxt/compare/v4.5.27...v4.5.28)
-
----
-updated-dependencies:
-- dependency-name: ccxt
-  dependency-version: 4.5.28
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump ccxt from 4.5.22 to 4.5.27
-
-Bumps [ccxt](https://github.com/ccxt/ccxt) from 4.5.22 to 4.5.27.
-- [Release notes](https://github.com/ccxt/ccxt/releases)
-- [Commits](https://github.com/ccxt/ccxt/compare/v4.5.22...v4.5.27)
-
----
-updated-dependencies:
-- dependency-name: ccxt
-  dependency-version: 4.5.27
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.85
-"Merge pull request #3091 from geekcomputers/dependabot/pip/matplotlib-3.10.8
-
-Bump matplotlib from 3.10.7 to 3.10.8","Bump matplotlib from 3.10.7 to 3.10.8
-
-Bumps [matplotlib](https://github.com/matplotlib/matplotlib) from 3.10.7 to 3.10.8.
-- [Release notes](https://github.com/matplotlib/matplotlib/releases)
-- [Commits](https://github.com/matplotlib/matplotlib/compare/v3.10.7...v3.10.8)
-
----
-updated-dependencies:
-- dependency-name: matplotlib
-  dependency-version: 3.10.8
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.81
-"Bump ccxt from 4.5.22 to 4.5.27
-
-Bumps [ccxt](https://github.com/ccxt/ccxt) from 4.5.22 to 4.5.27.
-- [Release notes](https://github.com/ccxt/ccxt/releases)
-- [Commits](https://github.com/ccxt/ccxt/compare/v4.5.22...v4.5.27)
-
----
-updated-dependencies:
-- dependency-name: ccxt
-  dependency-version: 4.5.27
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump ccxt from 4.5.21 to 4.5.22
-
-Bumps [ccxt](https://github.com/ccxt/ccxt) from 4.5.21 to 4.5.22.
-- [Release notes](https://github.com/ccxt/ccxt/releases)
-- [Commits](https://github.com/ccxt/ccxt/compare/v4.5.21...v4.5.22)
-
----
-updated-dependencies:
-- dependency-name: ccxt
-  dependency-version: 4.5.22
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.86
-"Bump fastapi from 0.123.4 to 0.124.4
-
-Bumps [fastapi](https://github.com/fastapi/fastapi) from 0.123.4 to 0.124.4.
-- [Release notes](https://github.com/fastapi/fastapi/releases)
-- [Commits](https://github.com/fastapi/fastapi/compare/0.123.4...0.124.4)
-
----
-updated-dependencies:
-- dependency-name: fastapi
-  dependency-version: 0.124.4
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump fastapi from 0.122.0 to 0.123.4
-
-Bumps [fastapi](https://github.com/fastapi/fastapi) from 0.122.0 to 0.123.4.
-- [Release notes](https://github.com/fastapi/fastapi/releases)
-- [Commits](https://github.com/fastapi/fastapi/compare/0.122.0...0.123.4)
-
----
-updated-dependencies:
-- dependency-name: fastapi
-  dependency-version: 0.123.4
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.87
-"Bump openai from 2.8.1 to 2.9.0
-
-Bumps [openai](https://github.com/openai/openai-python) from 2.8.1 to 2.9.0.
-- [Release notes](https://github.com/openai/openai-python/releases)
-- [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/openai/openai-python/compare/v2.8.1...v2.9.0)
-
----
-updated-dependencies:
-- dependency-name: openai
-  dependency-version: 2.9.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump openai from 2.7.1 to 2.8.1
-
-Bumps [openai](https://github.com/openai/openai-python) from 2.7.1 to 2.8.1.
-- [Release notes](https://github.com/openai/openai-python/releases)
-- [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/openai/openai-python/compare/v2.7.1...v2.8.1)
-
----
-updated-dependencies:
-- dependency-name: openai
-  dependency-version: 2.8.1
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",1.0
-"Merge pull request #3083 from geekcomputers/dependabot/pip/pydantic-2.12.5
-
-Bump pydantic from 2.12.4 to 2.12.5","Merge pull request #3039 from geekcomputers/dependabot/pip/pydantic-2.12.4
-
-Bump pydantic from 2.12.3 to 2.12.4",0.88
-"Merge pull request #3082 from geekcomputers/dependabot/pip/pymongo-4.15.5
-
-Bump pymongo from 4.15.4 to 4.15.5","Merge pull request #3059 from geekcomputers/dependabot/pip/pymongo-4.15.4
-
-Bump pymongo from 4.15.3 to 4.15.4",0.89
-"Merge pull request #3084 from geekcomputers/dependabot/pip/protobuf-6.33.2
-
-Bump protobuf from 6.33.1 to 6.33.2","Merge pull request #3047 from geekcomputers/dependabot/pip/protobuf-6.33.1
-
-Bump protobuf from 6.33.0 to 6.33.1",0.91
-"Bump protobuf from 6.33.1 to 6.33.2
-
-Bumps [protobuf](https://github.com/protocolbuffers/protobuf) from 6.33.1 to 6.33.2.
-- [Release notes](https://github.com/protocolbuffers/protobuf/releases)
-- [Commits](https://github.com/protocolbuffers/protobuf/commits)
-
----
-updated-dependencies:
-- dependency-name: protobuf
-  dependency-version: 6.33.2
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump protobuf from 6.33.0 to 6.33.1
-
-Bumps [protobuf](https://github.com/protocolbuffers/protobuf) from 6.33.0 to 6.33.1.
-- [Release notes](https://github.com/protocolbuffers/protobuf/releases)
-- [Changelog](https://github.com/protocolbuffers/protobuf/blob/main/protobuf_release.bzl)
-- [Commits](https://github.com/protocolbuffers/protobuf/commits)
-
----
-updated-dependencies:
-- dependency-name: protobuf
-  dependency-version: 6.33.1
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.98
-"Bump pydantic from 2.12.4 to 2.12.5
-
-Bumps [pydantic](https://github.com/pydantic/pydantic) from 2.12.4 to 2.12.5.
-- [Release notes](https://github.com/pydantic/pydantic/releases)
-- [Changelog](https://github.com/pydantic/pydantic/blob/main/HISTORY.md)
-- [Commits](https://github.com/pydantic/pydantic/compare/v2.12.4...v2.12.5)
-
----
-updated-dependencies:
-- dependency-name: pydantic
-  dependency-version: 2.12.5
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump pydantic from 2.12.3 to 2.12.4
-
-Bumps [pydantic](https://github.com/pydantic/pydantic) from 2.12.3 to 2.12.4.
-- [Release notes](https://github.com/pydantic/pydantic/releases)
-- [Changelog](https://github.com/pydantic/pydantic/blob/v2.12.4/HISTORY.md)
-- [Commits](https://github.com/pydantic/pydantic/compare/v2.12.3...v2.12.4)
-
----
-updated-dependencies:
-- dependency-name: pydantic
-  dependency-version: 2.12.4
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",1.0
-"Bump pymongo from 4.15.4 to 4.15.5
-
-Bumps [pymongo](https://github.com/mongodb/mongo-python-driver) from 4.15.4 to 4.15.5.
-- [Release notes](https://github.com/mongodb/mongo-python-driver/releases)
-- [Changelog](https://github.com/mongodb/mongo-python-driver/blob/master/doc/changelog.rst)
-- [Commits](https://github.com/mongodb/mongo-python-driver/compare/4.15.4...4.15.5)
-
----
-updated-dependencies:
-- dependency-name: pymongo
-  dependency-version: 4.15.5
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump pymongo from 4.15.3 to 4.15.4
-
-Bumps [pymongo](https://github.com/mongodb/mongo-python-driver) from 4.15.3 to 4.15.4.
-- [Release notes](https://github.com/mongodb/mongo-python-driver/releases)
-- [Changelog](https://github.com/mongodb/mongo-python-driver/blob/master/doc/changelog.rst)
-- [Commits](https://github.com/mongodb/mongo-python-driver/compare/4.15.3...4.15.4)
-
----
-updated-dependencies:
-- dependency-name: pymongo
-  dependency-version: 4.15.4
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",1.0
-"Bump selenium from 4.38.0 to 4.39.0
-
-Bumps [selenium](https://github.com/SeleniumHQ/Selenium) from 4.38.0 to 4.39.0.
-- [Release notes](https://github.com/SeleniumHQ/Selenium/releases)
-- [Commits](https://github.com/SeleniumHQ/Selenium/compare/selenium-4.38.0...selenium-4.39.0)
-
----
-updated-dependencies:
-- dependency-name: selenium
-  dependency-version: 4.39.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump selenium from 4.37.0 to 4.38.0
-
-Bumps [selenium](https://github.com/SeleniumHQ/Selenium) from 4.37.0 to 4.38.0.
-- [Release notes](https://github.com/SeleniumHQ/Selenium/releases)
-- [Commits](https://github.com/SeleniumHQ/Selenium/compare/selenium-4.37.0...selenium-4.38.0)
-
----
-updated-dependencies:
-- dependency-name: selenium
-  dependency-version: 4.38.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.87
-"Bump fastapi from 0.122.0 to 0.123.4
-
-Bumps [fastapi](https://github.com/fastapi/fastapi) from 0.122.0 to 0.123.4.
-- [Release notes](https://github.com/fastapi/fastapi/releases)
-- [Commits](https://github.com/fastapi/fastapi/compare/0.122.0...0.123.4)
-
----
-updated-dependencies:
-- dependency-name: fastapi
-  dependency-version: 0.123.4
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump fastapi from 0.121.1 to 0.122.0
-
-Bumps [fastapi](https://github.com/fastapi/fastapi) from 0.121.1 to 0.122.0.
-- [Release notes](https://github.com/fastapi/fastapi/releases)
-- [Commits](https://github.com/fastapi/fastapi/compare/0.121.1...0.122.0)
-
----
-updated-dependencies:
-- dependency-name: fastapi
-  dependency-version: 0.122.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.87
-fixing negative integers by using the absolute value before computing the digit sum.,fixing negative integers by using the absolute value before computing the digit sum.,1.0
-add the docs for the sum_of_digits,add the docs for the sum_of_digits,1.0
-"Bump ccxt from 4.5.21 to 4.5.22
-
-Bumps [ccxt](https://github.com/ccxt/ccxt) from 4.5.21 to 4.5.22.
-- [Release notes](https://github.com/ccxt/ccxt/releases)
-- [Commits](https://github.com/ccxt/ccxt/compare/v4.5.21...v4.5.22)
-
----
-updated-dependencies:
-- dependency-name: ccxt
-  dependency-version: 4.5.22
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump ccxt from 4.5.20 to 4.5.21
-
-Bumps [ccxt](https://github.com/ccxt/ccxt) from 4.5.20 to 4.5.21.
-- [Release notes](https://github.com/ccxt/ccxt/releases)
-- [Changelog](https://github.com/ccxt/ccxt/blob/master/exchanges.cfg)
-- [Commits](https://github.com/ccxt/ccxt/compare/v4.5.20...v4.5.21)
-
----
-updated-dependencies:
-- dependency-name: ccxt
-  dependency-version: 4.5.21
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.86
-"Bump fastapi from 0.121.1 to 0.122.0
-
-Bumps [fastapi](https://github.com/fastapi/fastapi) from 0.121.1 to 0.122.0.
-- [Release notes](https://github.com/fastapi/fastapi/releases)
-- [Commits](https://github.com/fastapi/fastapi/compare/0.121.1...0.122.0)
-
----
-updated-dependencies:
-- dependency-name: fastapi
-  dependency-version: 0.122.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump fastapi from 0.121.0 to 0.121.1
-
-Bumps [fastapi](https://github.com/fastapi/fastapi) from 0.121.0 to 0.121.1.
-- [Release notes](https://github.com/fastapi/fastapi/releases)
-- [Commits](https://github.com/fastapi/fastapi/compare/0.121.0...0.121.1)
-
----
-updated-dependencies:
-- dependency-name: fastapi
-  dependency-version: 0.121.1
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.86
-"Bump fastapi from 0.121.1 to 0.122.0
-
-Bumps [fastapi](https://github.com/fastapi/fastapi) from 0.121.1 to 0.122.0.
-- [Release notes](https://github.com/fastapi/fastapi/releases)
-- [Commits](https://github.com/fastapi/fastapi/compare/0.121.1...0.122.0)
-
----
-updated-dependencies:
-- dependency-name: fastapi
-  dependency-version: 0.122.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump fastapi from 0.120.2 to 0.121.0
-
-Bumps [fastapi](https://github.com/fastapi/fastapi) from 0.120.2 to 0.121.0.
-- [Release notes](https://github.com/fastapi/fastapi/releases)
-- [Commits](https://github.com/fastapi/fastapi/compare/0.120.2...0.121.0)
-
----
-updated-dependencies:
-- dependency-name: fastapi
-  dependency-version: 0.121.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.85
-"Bump ccxt from 4.5.20 to 4.5.21
-
-Bumps [ccxt](https://github.com/ccxt/ccxt) from 4.5.20 to 4.5.21.
-- [Release notes](https://github.com/ccxt/ccxt/releases)
-- [Changelog](https://github.com/ccxt/ccxt/blob/master/exchanges.cfg)
-- [Commits](https://github.com/ccxt/ccxt/compare/v4.5.20...v4.5.21)
-
----
-updated-dependencies:
-- dependency-name: ccxt
-  dependency-version: 4.5.21
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump ccxt from 4.5.18 to 4.5.20
-
-Bumps [ccxt](https://github.com/ccxt/ccxt) from 4.5.18 to 4.5.20.
-- [Release notes](https://github.com/ccxt/ccxt/releases)
-- [Changelog](https://github.com/ccxt/ccxt/blob/master/exchanges.cfg)
-- [Commits](https://github.com/ccxt/ccxt/compare/v4.5.18...v4.5.20)
-
----
-updated-dependencies:
-- dependency-name: ccxt
-  dependency-version: 4.5.20
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.9
-"Bump ccxt from 4.5.20 to 4.5.21
-
-Bumps [ccxt](https://github.com/ccxt/ccxt) from 4.5.20 to 4.5.21.
-- [Release notes](https://github.com/ccxt/ccxt/releases)
-- [Changelog](https://github.com/ccxt/ccxt/blob/master/exchanges.cfg)
-- [Commits](https://github.com/ccxt/ccxt/compare/v4.5.20...v4.5.21)
-
----
-updated-dependencies:
-- dependency-name: ccxt
-  dependency-version: 4.5.21
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump ccxt from 4.5.15 to 4.5.18
-
-Bumps [ccxt](https://github.com/ccxt/ccxt) from 4.5.15 to 4.5.18.
-- [Release notes](https://github.com/ccxt/ccxt/releases)
-- [Changelog](https://github.com/ccxt/ccxt/blob/master/exchanges.cfg)
-- [Commits](https://github.com/ccxt/ccxt/compare/v4.5.15...v4.5.18)
-
----
-updated-dependencies:
-- dependency-name: ccxt
-  dependency-version: 4.5.18
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.81
-"Bump ccxt from 4.5.18 to 4.5.20
-
-Bumps [ccxt](https://github.com/ccxt/ccxt) from 4.5.18 to 4.5.20.
-- [Release notes](https://github.com/ccxt/ccxt/releases)
-- [Changelog](https://github.com/ccxt/ccxt/blob/master/exchanges.cfg)
-- [Commits](https://github.com/ccxt/ccxt/compare/v4.5.18...v4.5.20)
-
----
-updated-dependencies:
-- dependency-name: ccxt
-  dependency-version: 4.5.20
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump ccxt from 4.5.15 to 4.5.18
-
-Bumps [ccxt](https://github.com/ccxt/ccxt) from 4.5.15 to 4.5.18.
-- [Release notes](https://github.com/ccxt/ccxt/releases)
-- [Changelog](https://github.com/ccxt/ccxt/blob/master/exchanges.cfg)
-- [Commits](https://github.com/ccxt/ccxt/compare/v4.5.15...v4.5.18)
-
----
-updated-dependencies:
-- dependency-name: ccxt
-  dependency-version: 4.5.18
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.9
-"Merge pull request #3050 from Madann06/master
-
-Fix incorrect Manhattan distance calculation for custom goal states",Fix incorrect Manhattan distance calculation for custom goal states,0.84
-"Merge pull request #3049 from Aakashdoraisamy/add-remoteok-job-scraper
-
-Add RemoteOK Job Scraper Script",Add RemoteOK job scraper script,0.9
-"Bump fastapi from 0.121.0 to 0.121.1
-
-Bumps [fastapi](https://github.com/fastapi/fastapi) from 0.121.0 to 0.121.1.
-- [Release notes](https://github.com/fastapi/fastapi/releases)
-- [Commits](https://github.com/fastapi/fastapi/compare/0.121.0...0.121.1)
-
----
-updated-dependencies:
-- dependency-name: fastapi
-  dependency-version: 0.121.1
-  dependency-type: direct:production
-  update-type: version-update:semver-patch
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>","Bump fastapi from 0.120.2 to 0.121.0
-
-Bumps [fastapi](https://github.com/fastapi/fastapi) from 0.120.2 to 0.121.0.
-- [Release notes](https://github.com/fastapi/fastapi/releases)
-- [Commits](https://github.com/fastapi/fastapi/compare/0.120.2...0.121.0)
-
----
-updated-dependencies:
-- dependency-name: fastapi
-  dependency-version: 0.121.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.91
-"Merge pull request #3038 from geekcomputers/dependabot/pip/google-api-python-client-2.187.0
-
-Bump google-api-python-client from 2.186.0 to 2.187.0","Bump google-api-python-client from 2.186.0 to 2.187.0
-
-Bumps [google-api-python-client](https://github.com/googleapis/google-api-python-client) from 2.186.0 to 2.187.0.
-- [Release notes](https://github.com/googleapis/google-api-python-client/releases)
-- [Commits](https://github.com/googleapis/google-api-python-client/compare/v2.186.0...v2.187.0)
-
----
-updated-dependencies:
-- dependency-name: google-api-python-client
-  dependency-version: 2.187.0
-  dependency-type: direct:production
-  update-type: version-update:semver-minor
-...
-
-Signed-off-by: dependabot[bot] <support@github.com>",0.85
-"Merge pull request #2999 from khanhkhanhlele/Electronics_Algorithms/resistance.py
-
-Fix typos in Electronics_Algorithms/resistance.py",Fix typos in Electronics_Algorithms/resistance.py,0.89
-"Merge pull request #2998 from khanhkhanhlele/Droplistmenu/GamesCalender.py
-
-Fix typos in Droplistmenu/GamesCalender.py",Fix typos in Droplistmenu/GamesCalender.py,0.89
-"Merge pull request #2997 from khanhkhanhlele/Compression_Analysis/PSNR.py
-
-Fix typos in Compression_Analysis/PSNR.py",Fix typos in Compression_Analysis/PSNR.py,0.89
-"Merge pull request #2996 from khanhkhanhlele/Checker_game_by_dz/first.py
-
-Fix typos in Checker_game_by_dz/first.py",Fix typos in Checker_game_by_dz/first.py,0.81
-"Merge pull request #2995 from khanhkhanhlele/Checker_game_by_dz/modules/__init__.py
-
-Fix typos in Checker_game_by_dz/modules/__init__.py",Fix typos in Checker_game_by_dz/modules/__init__.py,0.91
-"Merge pull request #2994 from khanhkhanhlele/brickout-game/brickout-game.py
-
-Fix typos in brickout-game/brickout-game.py",Fix typos in brickout-game/brickout-game.py,0.96
-"Merge pull request #2993 from khanhkhanhlele/BoardGame-CLI/snakeLadder.py
-
-Fix typos in BoardGame-CLI/snakeLadder.py",Fix typos in BoardGame-CLI/snakeLadder.py,0.92
-"Merge pull request #2992 from khanhkhanhlele/BlackJack_game/blackjack.py
-
-Fix typos in BlackJack_game/blackjack.py",Fix typos in BlackJack_game/blackjack.py,0.88
-"Merge pull request #2991 from khanhkhanhlele/BlackJack_game/blackjack_simulate.py
-
-Fix typos in BlackJack_game/blackjack_simulate.py",Fix typos in BlackJack_game/blackjack_simulate.py,0.88
-"Merge pull request #2990 from khanhkhanhlele/bank_managment_system/QTFrontend.py
-
-Fix typos in bank_managment_system/QTFrontend.py",Fix typos in bank_managment_system/QTFrontend.py,0.89
-"Merge pull request #2987 from khanhkhanhlele/fix/update2
-
-fix typo update2",fix typo update2,0.83
-fix-typo,fix-typo,1.0
-Update README.md,Update README.md,1.0
-Update README.md,Update README.md,1.0
-Update README.md,Update README.md,1.0
-Update README.md,Update README.md,1.0
-Update README.md,Update README.md,1.0
-Update README.md,Update README.md,1.0
-Update README.md,Update README.md,1.0
-Update README.md,Update README.md,1.0
-Update README.md,Update README.md,1.0
-Update README.md,Update README.md,1.0
-Initial commit,Initial commit,1.0
 Update README.md,Update README.md,1.0
 Update README.md,Update README.md,1.0
 Update README.md,Update README.md,1.0
@@ -1316,3 +44,492 @@ Update README.md,Update README.md,1.0
 Update README.md,Update README.md,1.0
 Update README.md,Update README.md,1.0
 Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+"Merge pull request #84 from nepal143/Gesture-Based-Game-Controller
+
+Gesture based game controller",added Gesture Based Game Controller,0.87
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Added requirments.txt file,Added requirments.txt file,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update README.md,Update README.md,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+chore: update contributors [skip ci],chore: update contributors [skip ci],1.0
+chore: update contributors [skip ci],chore: update contributors [skip ci],1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+chore: update contributors [skip ci],chore: update contributors [skip ci],1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+"Merge pull request #47 from aafaris/feature/crypto-tracker
+
+add real-time crypto price tracker script",add real-time crypto price tracker script,0.81
+Merge branch 'king04aman:main' into pomodoro,Merge branch 'king04aman:main' into main,0.81
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update project list,Update project list,1.0
+Update contributor_welcome.yml,Update contributor_welcome.yml,1.0
+Update project list,Update project list,1.0
+Update tic_tac_toc.py,Update tic_tac_toc.py,1.0
+add readme,Add README.md,0.82
+"Merge pull request #21 from nepal143/Youtube-Video-Downloader
+
+ Initial YouTube Video Downloader project with yt-dlp integration",Initial YouTube Video Downloader project with yt-dlp integration,0.86
+"Merge pull request #41 from himanshumahajan138/feature/add-text-to-speech
+
+Fixes: #38 ; Adds Text-to-Speech Converter using gTTS",Fixes: #38 ; Adds Text-to-Speech Converter using gTTS,0.82
+added Readme.md,added Readme.md,1.0
+added Recipe Finder with Meal Planning feature,added Recipe Finder with Meal Planning feature,1.0
+added Recipe Finder with Meal Planning feature,added Recipe Finder with Meal Planning feature,1.0
+added Recipe Finder with Meal Planning feature,added Recipe Finder with Meal Planning feature,1.0
+"Merge pull request #18 from Sneha-S-D/Personal-Finance-Tracker
+
+Added personal finance tracker project",Added personal finance tracker project,0.86
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Project Initial Setup,0.92
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial Project setup,0.92
+Init: Initial Setup,Init: Initial Project setup,0.92
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial project setup,0.92
+Init: Initial Setup,Init: Project initial setup,0.92
+Init: Initial Setup,Init: Initial Project setup,0.92
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Project Initial Setup,0.92
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial Project setup,0.92
+Init: Initial Setup,Init: Initial Project setup,0.92
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial project setup,0.92
+Init: Initial Setup,Init: Project initial setup,0.92
+Init: Initial Setup,Init: Initial Project setup,0.92
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Project Initial Setup,0.92
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial Project setup,0.92
+Init: Initial Setup,Init: Initial Project setup,0.92
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial project setup,0.92
+Init: Initial Setup,Init: Project initial setup,0.92
+Init: Initial Setup,Init: Initial Project setup,0.92
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Project Initial Setup,Init: Initial Setup,0.92
+Init: Project Initial Setup,Init: Initial Project setup,1.0
+Init: Project Initial Setup,Init: Initial Project setup,1.0
+Init: Project Initial Setup,Init: Initial Setup,0.92
+Init: Project Initial Setup,Init: Initial Setup,0.92
+Init: Project Initial Setup,Init: Initial project setup,1.0
+Init: Project Initial Setup,Init: Project initial setup,1.0
+Init: Project Initial Setup,Init: Initial Project setup,1.0
+Init: Project Initial Setup,Init: Initial Setup,0.92
+Init: Project Initial Setup,Init: Initial Setup,0.92
+Init: Initial Setup,Init: Initial Project setup,0.92
+Init: Initial Setup,Init: Initial Project setup,0.92
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial project setup,0.92
+Init: Initial Setup,Init: Project initial setup,0.92
+Init: Initial Setup,Init: Initial Project setup,0.92
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Project setup,Init: Initial Project setup,1.0
+Init: Initial Project setup,Init: Initial Setup,0.92
+Init: Initial Project setup,Init: Initial Setup,0.92
+Init: Initial Project setup,Init: Initial project setup,1.0
+Init: Initial Project setup,Init: Project initial setup,1.0
+Init: Initial Project setup,Init: Initial Project setup,1.0
+Init: Initial Project setup,Init: Initial Setup,0.92
+Init: Initial Project setup,Init: Initial Setup,0.92
+Init: Initial Project setup,Init: Initial Setup,0.92
+Init: Initial Project setup,Init: Initial Setup,0.92
+Init: Initial Project setup,Init: Initial project setup,1.0
+Init: Initial Project setup,Init: Project initial setup,1.0
+Init: Initial Project setup,Init: Initial Project setup,1.0
+Init: Initial Project setup,Init: Initial Setup,0.92
+Init: Initial Project setup,Init: Initial Setup,0.92
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial project setup,0.92
+Init: Initial Setup,Init: Project initial setup,0.92
+Init: Initial Setup,Init: Initial Project setup,0.92
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial project setup,0.92
+Init: Initial Setup,Init: Project initial setup,0.92
+Init: Initial Setup,Init: Initial Project setup,0.92
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial Setup,Init: Initial Setup,1.0
+Init: Initial project setup,Init: Project initial setup,1.0
+Init: Initial project setup,Init: Initial Project setup,1.0
+Init: Initial project setup,Init: Initial Setup,0.92
+Init: Initial project setup,Init: Initial Setup,0.92
+Init: Project initial setup,Init: Initial Project setup,1.0
+Init: Project initial setup,Init: Initial Setup,0.92
+Init: Project initial setup,Init: Initial Setup,0.92
+Init: Initial Project setup,Init: Initial Setup,0.92
+Init: Initial Project setup,Init: Initial Setup,0.92
+Init: Initial Setup,Init: Initial Setup,1.0

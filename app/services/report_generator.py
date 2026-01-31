@@ -74,7 +74,6 @@ def generate_report(repo_urls, language, threshold):
     # -------------------------
     matrix_names, sim_matrix = compute_repo_similarity_matrix(repo_file_texts)
 
-    # build table structure for template
     matrix_table = []
     for i, name in enumerate(matrix_names):
         row = []
@@ -94,7 +93,7 @@ def generate_report(repo_urls, language, threshold):
     )
 
     # -------------------------
-    # Side‑by‑side demo diff (reuse best pair if exists)
+    # Side‑by‑side demo diff
     # -------------------------
     if file_pairs:
         ra, rb, fa, fb, score = file_pairs[0]
@@ -107,7 +106,7 @@ def generate_report(repo_urls, language, threshold):
     left_html, right_html = generate_side_by_side_diff(left_code, right_code)
 
     # -------------------------
-    # Aggregate repo plagiarism score (avg similarity)
+    # Aggregate repo plagiarism score
     # -------------------------
     repo_pair_scores = {}
 
@@ -134,8 +133,8 @@ def generate_report(repo_urls, language, threshold):
         "pdf_report": pdf_path,
         "analysis_note": "Large repositories analyzed with bounded sampling.",
 
-        # NEW FEATURES
-        "repo_names": matrix_names,
+        # new features
+        "matrix_names": matrix_names,
         "similarity_matrix": matrix_table,
         "file_similarity_pairs": file_pairs,
         "repo_pair_confidence": repo_pair_confidence,
