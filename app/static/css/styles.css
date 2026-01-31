@@ -72,3 +72,12 @@ th, td {
         transform: rotate(360deg);
     }
 }
+
+.compare-btn {
+    width: 100%;
+    max-width: 320px;
+    height: 48px;
+    margin: 10px 0;
+    display: block;
+    text-align: center;
+}

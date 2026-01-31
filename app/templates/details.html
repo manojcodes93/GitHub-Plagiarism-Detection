@@ -1,3 +1,5 @@
+
+
 {% extends "base.html" %}
 {% block content %}
 
@@ -9,28 +11,22 @@
 
 {% set confidence = "LOW" %}
 {% set confidence_color = "#14532d" %}
-{% set confidence_icon = "🟢" %}
 
-{# Check repo similarity matrix #}
 {% for row in similarity_matrix %}
     {% for v in row %}
         {% if v is not none and v|float >= 0.7 and file_similarity_table and file_similarity_table|length > 0 %}
             {% set confidence = "HIGH" %}
             {% set confidence_color = "#7f1d1d" %}
-            {% set confidence_icon = "🔴" %}
         {% elif v is not none and v|float >= 0.4 and confidence != "HIGH" %}
             {% set confidence = "MEDIUM" %}
             {% set confidence_color = "#713f12" %}
-            {% set confidence_icon = "🟡" %}
         {% endif %}
     {% endfor %}
 {% endfor %}
 
-{# Commit similarity fallback #}
 {% if suspicious_commits and suspicious_commits|length > 0 and confidence == "LOW" %}
     {% set confidence = "MEDIUM" %}
     {% set confidence_color = "#713f12" %}
-    {% set confidence_icon = "🟡" %}
 {% endif %}
 
 <div style="
@@ -38,35 +34,25 @@
     padding:18px 22px;
     border-radius:12px;
     margin-bottom:28px;
-    border:1px solid #1f2937;
 ">
     <div style="font-size:20px; font-weight:700;">
         Plagiarism Confidence: {{ confidence }}
     </div>
-    <div style="font-size:14px; opacity:.85; margin-top:6px;">
-        This confidence is derived from repository similarity, file‑level matches,
-        and commit message patterns.
-    </div>
 </div>
 
-{# ============================= #}
-{# FILE LEVEL SIMILARITY SECTION #}
-{# ============================= #}
+<hr>
 
 <h3>File‑Level Similarity</h3>
 
 {% if file_similarity_table and file_similarity_table|length > 0 %}
-
-<div class="table-wrap">
 <table style="width:100%; border-collapse:collapse;">
 <tr>
-    <th align="left">Repository A</th>
-    <th align="left">File #</th>
-    <th align="left">Repository B</th>
-    <th align="left">File #</th>
-    <th align="left">Similarity</th>
+    <th>Repo A</th>
+    <th>File #</th>
+    <th>Repo B</th>
+    <th>File #</th>
+    <th>Similarity</th>
 </tr>
-
 {% for row in file_similarity_table %}
 <tr>
     <td>{{ row.repo_a }}</td>
@@ -77,15 +63,11 @@
 </tr>
 {% endfor %}
 </table>
-</div>
-
 {% else %}
-<p style="opacity:.75;">
-No strong file‑level plagiarism detected.
-</p>
+<p>No strong file‑level plagiarism detected.</p>
 {% endif %}
 
-<hr style="margin:30px 0; opacity:.2;">
+<hr>
 
 <h3>Comparisons</h3>
 
@@ -103,12 +85,27 @@ Repository Similarity Matrix
 
 <br><br>
 
-<button class="primary-btn"
-onclick="location.href='{{ url_for('main.compare_view') }}'">
+<button class="primary-btn" onclick="showComingSoon(this)">
 View Side‑by‑Side Code
 </button>
 
-<hr style="margin:30px 0; opacity:.2;">
+<!-- COMING SOON MESSAGE (HIDDEN BY DEFAULT) -->
+<div id="sideBySideComingSoon"
+     style="
+        display:none;
+        margin-top:14px;
+        padding:14px 16px;
+        border-radius:10px;
+        background:#020617;
+        border:1px solid #334155;
+        color:#e5e7eb;
+        font-size:14px;
+     ">
+    <strong>Side‑by‑Side Code Comparison</strong><br>
+    This feature is under development and will be available in a future update.
+</div>
+
+<hr>
 
 <h3>Downloads</h3>
 
@@ -125,5 +122,16 @@ Download PDF
 </button>
 
 </div>
+
+<script>
+function showComingSoon(btn) {
+    const box = document.getElementById("sideBySideComingSoon");
+    box.style.display = "block";
+
+    // Optional UX polish
+    btn.disabled = true;
+    btn.innerText = "Side‑by‑Side (Coming Soon)";
+}
+</script>
 
 {% endblock %}
