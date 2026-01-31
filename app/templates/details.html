@@ -1,6 +1,34 @@
 {% extends "base.html" %}
 {% block content %}
 
+<h2>Repository Similarity Matrix</h2>
+
+<table>
+    <tr>
+        <th>Repo</th>
+        {% for name in data.matrix_names %}
+            <th>{{ name }}</th>
+        {% endfor %}
+    </tr>
+
+    {% for row in data.similarity_matrix %}
+    <tr>
+        <th>{{ data.matrix_names[loop.index0] }}</th>
+        {% for s in row %}
+            <td>
+                {% if s is number %}
+                    {{ "%.2f"|format(s) }}
+                {% else %}
+                    {{ s }}
+                {% endif %}
+            </td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
+
+<hr>
+
 <h2>Commit Message Similarity Detection</h2>
 
 <table>
@@ -9,86 +37,28 @@
     <th>Commit Message B</th>
     <th>Similarity</th>
 </tr>
-{% for a,b,s in data.suspicious_commits %}
+
+{% for item in data.commit_similarities %}
 <tr>
-    <td>{{a}}</td>
-    <td>{{b}}</td>
-    <td>{{"%.2f"|format(s)}}</td>
+    <td>{{ item.a }}</td>
+    <td>{{ item.b }}</td>
+    <td>{{ "%.2f"|format(item.score) }}</td>
 </tr>
 {% endfor %}
 </table>
 
-
-<h2>Repository Similarity Matrix</h2>
-
-<table>
-<tr>
-    <th>Repo</th>
-    {% for name in data.repo_names %}
-        <th>{{name}}</th>
-    {% endfor %}
-</tr>
-
-{% for i,row in enumerate(data.similarity_matrix) %}
-<tr>
-    <th>{{data.repo_names[i]}}</th>
-    {% for val in row %}
-        {% if val is none %}
-            <td>—</td>
-        {% else %}
-            <td>{{val}}</td>
-        {% endif %}
-    {% endfor %}
-</tr>
-{% endfor %}
-</table>
-
-
-<h2>Aggregate Repo Pair Confidence</h2>
-
-<table>
-<tr>
-    <th>Repo Pair</th>
-    <th>Confidence</th>
-</tr>
-{% for k,v in data.repo_pair_confidence.items() %}
-<tr>
-    <td>{{k}}</td>
-    <td>{{v}}</td>
-</tr>
-{% endfor %}
-</table>
-
-
-<h2>Per‑File Similarity Matches</h2>
-
-<table>
-<tr>
-    <th>Repo A</th>
-    <th>Repo B</th>
-    <th>File A #</th>
-    <th>File B #</th>
-    <th>Similarity</th>
-</tr>
-{% for ra,rb,fa,fb,score in data.file_similarity_pairs %}
-<tr>
-    <td>{{ra}}</td>
-    <td>{{rb}}</td>
-    <td>{{fa}}</td>
-    <td>{{fb}}</td>
-    <td>{{"%.2f"|format(score)}}</td>
-</tr>
-{% endfor %}
-</table>
-
+<hr>
 
 <h2>Side‑by‑Side Code Proof</h2>
+
 <div class="code-compare">
-    <pre>{{data.code_left|safe}}</pre>
-    <pre>{{data.code_right|safe}}</pre>
+<pre>{{ data.code_a }}</pre>
+<pre>{{ data.code_b }}</pre>
 </div>
 
-<br>
+<hr>
+
+<h2>Download Report</h2>
 <a href="/download/csv">Download CSV</a>
 <a href="/download/pdf">Download PDF</a>
 
