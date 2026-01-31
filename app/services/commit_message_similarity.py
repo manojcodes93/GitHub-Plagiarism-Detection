@@ -1,22 +1,67 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-def compute_commit_message_similarity(commit_messages, threshold=0.8):
-    vectorizer = TfidfVectorizer(stop_words="english")
-    tfidf_matrix = vectorizer.fit_transform(commit_messages)
 
-    similarity_matrix = cosine_similarity(tfidf_matrix)
+def compute_commit_message_similarity(records, threshold=0.6):
+    """
+    Accepts:
+    - list[str]
+    - list[{"repo": name, "message": msg}]
+    Returns tuples compatible with exporter + template
+    """
 
-    suspicious_pairs = []
+    if not records or len(records) < 2:
+        return []
 
-    for i in range(len(commit_messages)):
-        for j in range(i + 1, len(commit_messages)):
-            score = similarity_matrix[i][j]
+    # -------------------------
+    # Normalize input safely
+    # -------------------------
+    messages = []
+    repos = []
+
+    for r in records:
+        if isinstance(r, dict):
+            msg = str(r.get("message", "")).strip()
+            repo = r.get("repo", "unknown")
+        else:
+            msg = str(r).strip()
+            repo = "unknown"
+
+        if msg:
+            messages.append(msg)
+            repos.append(repo)
+
+    if len(messages) < 2:
+        return []
+
+    # -------------------------
+    # Vectorize
+    # -------------------------
+    vectorizer = TfidfVectorizer(
+        stop_words="english",
+        ngram_range=(1, 2)
+    )
+
+    tfidf = vectorizer.fit_transform(messages)
+    sim = cosine_similarity(tfidf)
+
+    # -------------------------
+    # Build results
+    # -------------------------
+    results = []
+
+    for i in range(len(messages)):
+        for j in range(i + 1, len(messages)):
+
+            score = float(sim[i][j])
+
             if score >= threshold:
-                suspicious_pairs.append({
-                    "commit_1": commit_messages[i],
-                    "commit_2": commit_messages[j],
-                    "similarity": round(score, 2)
-                })
+                results.append((
+                    messages[i],
+                    messages[j],
+                    round(score, 3)
+                ))
 
-    return suspicious_pairs
+    results.sort(key=lambda x: x[2], reverse=True)
+
+    return results

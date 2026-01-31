@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Commit Message Similarity</h2>
+
+<table border="1" cellpadding="6">
+<tr>
+    <th>Commit A</th>
+    <th>Commit B</th>
+    <th>Similarity</th>
+</tr>
+
+{% for a,b,s in rows %}
+<tr>
+    <td>{{ a }}</td>
+    <td>{{ b }}</td>
+    <td>{{ s }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+{% endblock %}

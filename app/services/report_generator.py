@@ -8,14 +8,16 @@ from .similarity import (
     compute_repo_similarity_matrix,
     compute_file_similarity_pairs,
 )
+from .preprocessing import preprocess_code
 from ..config import Config
 
 
 def generate_report(repo_urls, language, threshold):
+
     repo_paths = clone_repositories(repo_urls)
 
     # -------------------------
-    # Commit message analysis
+    # Commit messages
     # -------------------------
     all_commit_messages = []
 
@@ -24,19 +26,18 @@ def generate_report(repo_urls, language, threshold):
 
     suspicious_commits = compute_commit_message_similarity(
         all_commit_messages,
-        threshold=0.8
+        threshold=0.6
     )
 
     # -------------------------
-    # SAFE file sampling per repo
+    # File sampling
     # -------------------------
     repo_file_texts = {}
 
     for repo_path in repo_paths:
         repo_name = os.path.basename(repo_path)
-
         collected = []
-        file_count = 0
+        count = 0
 
         for root, dirs, files in os.walk(repo_path):
             dirs[:] = [d for d in dirs if d not in Config.SKIP_DIRS]
@@ -47,27 +48,32 @@ def generate_report(repo_urls, language, threshold):
 
                 full_path = os.path.join(root, file)
 
-                size_kb = os.path.getsize(full_path) / 1024
-                if size_kb > Config.MAX_FILE_SIZE_KB:
-                    continue
-
                 try:
+                    if os.path.getsize(full_path) / 1024 > Config.MAX_FILE_SIZE_KB:
+                        continue
+
                     with open(full_path, "r", errors="ignore") as f:
-                        collected.append(f.read())
-                        file_count += 1
+                        raw = f.read()
+
+                    processed = preprocess_code(raw)
+
+                    if len(processed) > 30:
+                        collected.append(processed)
+                        count += 1
+
                 except:
                     continue
 
-                if file_count >= Config.MAX_FILES_PER_REPO:
+                if count >= Config.MAX_FILES_PER_REPO:
                     break
 
-            if file_count >= Config.MAX_FILES_PER_REPO:
+            if count >= Config.MAX_FILES_PER_REPO:
                 break
 
         repo_file_texts[repo_name] = collected
 
     # -------------------------
-    # Repo similarity matrix
+    # Repo matrix
     # -------------------------
     matrix_names, sim_matrix = compute_repo_similarity_matrix(repo_file_texts)
 
@@ -75,10 +81,7 @@ def generate_report(repo_urls, language, threshold):
     for i in range(len(matrix_names)):
         row = []
         for j in range(len(matrix_names)):
-            if i == j:
-                row.append(None)
-            else:
-                row.append(round(float(sim_matrix[i][j]), 3))
+            row.append(None if i == j else round(float(sim_matrix[i][j]), 3))
         matrix_table.append(row)
 
     # -------------------------
@@ -90,46 +93,38 @@ def generate_report(repo_urls, language, threshold):
     )
 
     # -------------------------
-    # Fallback pair (ALWAYS ensures side-by-side works)
+    # SAFE side‑by‑side selection (FIX)
     # -------------------------
+    left_code = ""
+    right_code = ""
+
     if file_pairs:
-        ra, rb, fa, fb, score = file_pairs[0]
-        left_code = repo_file_texts[ra][fa]
-        right_code = repo_file_texts[rb][fb]
-    else:
-        left_code = "print('fallback A')"
-        right_code = "print('fallback B')"
+        try:
+            ra, rb, fa, fb, score = file_pairs[0]
+            left_code = repo_file_texts.get(ra, [""])[fa]
+            right_code = repo_file_texts.get(rb, [""])[fb]
+        except Exception:
+            pass
 
-    left_html, right_html = generate_side_by_side_diff(left_code, right_code)
-
-    # -------------------------
-    # Repo pair confidence
-    # -------------------------
-    repo_pair_scores = {}
-
-    for ra, rb, _, _, score in file_pairs:
-        key = tuple(sorted([ra, rb]))
-        repo_pair_scores.setdefault(key, []).append(score)
-
-    repo_pair_confidence = {
-        f"{a} ↔ {b}": round(sum(vals) / len(vals), 3)
-        for (a, b), vals in repo_pair_scores.items()
-    }
+    code_left_html, code_right_html = generate_side_by_side_diff(
+        left_code,
+        right_code
+    )
 
     # -------------------------
-    # Reports
+    # Export reports
     # -------------------------
     csv_path = generate_csv_report(suspicious_commits)
     pdf_path = generate_pdf_report(suspicious_commits)
 
     return {
         "suspicious_commits": suspicious_commits,
-        "matrix_names": matrix_names,          # ✅ REQUIRED
-        "similarity_matrix": matrix_table,     # ✅ REQUIRED
+        "matrix_names": matrix_names,
+        "similarity_matrix": matrix_table,
         "file_similarity_pairs": file_pairs,
-        "repo_pair_confidence": repo_pair_confidence,
-        "code_left": left_html,               # ✅ REQUIRED
-        "code_right": right_html,             # ✅ REQUIRED
+        "code_left": code_left_html,
+        "code_right": code_right_html,
         "csv_report": csv_path,
         "pdf_report": pdf_path,
+        "analysis_note": "Large repositories analyzed with bounded sampling.",
     }

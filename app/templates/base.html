@@ -1,25 +1,133 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>GitHub Plagiarism Detector</title>
+<title>CodeMirror</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<style>
 
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+body {
+    margin:0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: radial-gradient(circle at top,#0f172a,#020617);
+    color:white;
+}
 
-    <!-- Chart.js Matrix Plugin -->
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.3.0/dist/chartjs-chart-matrix.min.js"></script>
+/* ---------- NAVBAR ---------- */
+
+.navbar {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 40px;
+    background:rgba(15,23,42,.85);
+    backdrop-filter: blur(8px);
+    border-bottom:1px solid #1f2937;
+}
+
+.brand {
+    font-size:22px;
+    font-weight:700;
+    cursor:pointer;
+    letter-spacing:.5px;
+    transition:.25s;
+}
+
+.brand:hover {
+    color:#818cf8;
+    text-shadow:0 0 12px rgba(129,140,248,.45);
+}
+
+.nav-links {
+    display:flex;
+    gap:14px;
+}
+
+.nav-links button {
+    background:transparent;
+    border:1px solid #334155;
+    color:white;
+    padding:8px 18px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.25s;
+    font-size:14px;
+}
+
+.nav-links button:hover {
+    background:#1e293b;
+    border-color:#818cf8;
+    box-shadow:0 0 12px rgba(129,140,248,.35);
+    transform: translateY(-1px);
+}
+
+/* ---------- CONTENT ---------- */
+
+.content {
+    padding:60px 80px;
+}
+
+/* ---------- BUTTONS ---------- */
+
+.primary-btn {
+    background:linear-gradient(90deg,#6366f1,#8b5cf6);
+    border:none;
+    padding:14px 28px;
+    border-radius:12px;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.primary-btn:hover {
+    transform:translateY(-2px);
+    box-shadow:0 10px 30px rgba(99,102,241,.45);
+}
+
+/* ---------- CARDS ---------- */
+
+.card {
+    background:rgba(15,23,42,.75);
+    border:1px solid #1f2937;
+    border-radius:16px;
+    padding:30px;
+    box-shadow:0 20px 40px rgba(0,0,0,.35);
+}
+
+</style>
 </head>
+
 <body>
 
-<header>
-    <h1>GitHub Commit Plagiarism Detection System</h1>
-</header>
+<div class="navbar">
 
-<div class="container">
-    {% block content %}{% endblock %}
+    <!-- Brand → Dashboard -->
+    <div class="brand"
+         onclick="location.href='{{ url_for('main.dashboard') }}'">
+        CodeMirror
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="nav-links">
+
+        <button onclick="location.href='{{ url_for('main.dashboard') }}'">
+            Dashboard
+        </button>
+
+        <button onclick="location.href='{{ url_for('main.analyze') }}'">
+            Analyze
+        </button>
+
+        <button onclick="location.href='{{ url_for('main.results_home') }}'">
+            Results
+        </button>
+
+    </div>
+
+</div>
+
+<div class="content">
+{% block content %}{% endblock %}
 </div>
 
 </body>

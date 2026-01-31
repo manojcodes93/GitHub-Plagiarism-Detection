@@ -1,56 +1,87 @@
 import csv
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
 import os
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
-REPORT_DIR = "data/reports"
+
+REPORT_DIR = os.path.join("app", "data", "reports")
 os.makedirs(REPORT_DIR, exist_ok=True)
 
-def generate_csv_report(suspicious_commits):
-    csv_path = os.path.join(REPORT_DIR, "plagiarism_report.csv")
 
-    with open(csv_path, "w", newline="", encoding="utf-8") as f:
+# --------------------------------------------------
+# CSV EXPORT
+# --------------------------------------------------
+
+def generate_csv_report(rows):
+    path = os.path.join(REPORT_DIR, "plagiarism_report.csv")
+
+    with open(path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow(["Commit Message A", "Commit Message B", "Similarity"])
 
-        for item in suspicious_commits:
+        if not rows:
+            writer.writerow(["No suspicious commits found"])
+            return path
+
+        first = rows[0]
+
+        # -------- CASE A — new format (5 columns) --------
+        if len(first) == 5:
             writer.writerow([
-                item["commit_1"],
-                item["commit_2"],
-                item["similarity"]
+                "Repo A",
+                "Commit A",
+                "Repo B",
+                "Commit B",
+                "Similarity"
             ])
+            for row in rows:
+                writer.writerow(row)
 
-    return csv_path
+        # -------- CASE B — old format (3 columns) --------
+        elif len(first) == 3:
+            writer.writerow([
+                "Commit A",
+                "Commit B",
+                "Similarity"
+            ])
+            for row in rows:
+                writer.writerow(row)
+
+        # -------- fallback --------
+        else:
+            writer.writerow(["Row Data"])
+            for row in rows:
+                writer.writerow([str(row)])
+
+    return path
 
 
-def generate_pdf_report(suspicious_commits):
-    pdf_path = os.path.join(REPORT_DIR, "plagiarism_report.pdf")
+# --------------------------------------------------
+# PDF EXPORT
+# --------------------------------------------------
 
-    c = canvas.Canvas(pdf_path, pagesize=A4)
-    width, height = A4
+def generate_pdf_report(rows):
+    path = os.path.join(REPORT_DIR, "plagiarism_report.pdf")
 
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(50, height - 50, "GitHub Plagiarism Detection Report")
+    c = canvas.Canvas(path, pagesize=letter)
+    width, height = letter
 
+    y = height - 40
     c.setFont("Helvetica", 10)
-    y = height - 90
 
-    if not suspicious_commits:
-        c.drawString(50, y, "No suspicious commit similarities detected.")
-    else:
-        for item in suspicious_commits:
-            text = (
-                f"Similarity: {item['similarity']} | "
-                f"A: {item['commit_1'][:60]} | "
-                f"B: {item['commit_2'][:60]}"
-            )
-            c.drawString(50, y, text)
-            y -= 15
+    if not rows:
+        c.drawString(40, y, "No suspicious commits found")
+        c.save()
+        return path
 
-            if y < 50:
-                c.showPage()
-                c.setFont("Helvetica", 10)
-                y = height - 50
+    for row in rows:
+        text = " | ".join(str(x)[:80] for x in row)
+        c.drawString(40, y, text)
+        y -= 18
+
+        if y < 50:
+            c.showPage()
+            c.setFont("Helvetica", 10)
+            y = height - 40
 
     c.save()
-    return pdf_path
+    return path

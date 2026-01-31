@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+
+<h2>Repository Similarity Matrix</h2>
+
+{% if names and matrix %}
+
+<table border="1" cellpadding="8" style="width:100%;margin-top:20px;">
+<tr>
+    <th>Repo</th>
+    {% for n in names %}
+        <th>{{ n }}</th>
+    {% endfor %}
+</tr>
+
+{% for row in matrix %}
+<tr>
+    <th>{{ names[loop.index0] }}</th>
+    {% for v in row %}
+        <td>
+            {% if v is not none %}
+                {{ "%.3f"|format(v) }}
+            {% else %}
+                —
+            {% endif %}
+        </td>
+    {% endfor %}
+</tr>
+{% endfor %}
+
+</table>
+
+{% else %}
+<p>No similarity matrix available yet.</p>
+{% endif %}
+
+<br>
+<button class="primary-btn"
+        onclick="location.href='{{ url_for('main.dashboard') }}'">
+Back to Dashboard
+</button>
+
+</div>
+
+{% endblock %}

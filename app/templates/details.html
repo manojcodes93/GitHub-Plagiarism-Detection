@@ -1,94 +1,45 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>Repository Similarity Matrix</h2>
+<div class="card">
 
-<table>
-<tr>
-    <th>Repo</th>
-    {% for name in data.matrix_names %}
-        <th>{{ name }}</th>
-    {% endfor %}
-</tr>
+<h2>Analysis Results</h2>
 
-{% for row in data.similarity_matrix %}
-<tr>
-    <th>{{ data.matrix_names[loop.index0] }}</th>
-    {% for s in row %}
-        <td>
-            {% if s is number %}
-                {{ "%.2f"|format(s) }}
-            {% else %}
-                —
-            {% endif %}
-        </td>
-    {% endfor %}
-</tr>
-{% endfor %}
-</table>
+<br>
 
-<hr>
+<button class="primary-btn"
+onclick="location.href='{{ url_for('main.commit_diff_page') }}'">
+Commit Message Similarity
+</button>
 
-<h2>Per‑File Similarity Matches</h2>
+<br><br>
 
-<table>
-<tr>
-    <th>Repository A</th>
-    <th>Repository B</th>
-    <th>File Index A</th>
-    <th>File Index B</th>
-    <th>Similarity</th>
-</tr>
+<button class="primary-btn"
+onclick="location.href='{{ url_for('main.repo_matrix_page') }}'">
+Repository Similarity Matrix
+</button>
 
-{% for ra, rb, fa, fb, score in data.file_similarity_pairs %}
-<tr>
-    <td>{{ ra }}</td>
-    <td>{{ rb }}</td>
-    <td>{{ fa }}</td>
-    <td>{{ fb }}</td>
-    <td>{{ "%.2f"|format(score) }}</td>
-</tr>
-{% endfor %}
-</table>
+<br><br>
 
-<hr>
+<button class="primary-btn"
+onclick="location.href='{{ url_for('main.compare_view') }}'">
+View Side‑by‑Side Code
+</button>
 
-<h2>Commit Message Similarity</h2>
+<br><br>
 
-<table>
-<tr>
-    <th>Commit A</th>
-    <th>Commit B</th>
-    <th>Similarity</th>
-</tr>
+<button class="primary-btn"
+onclick="location.href='{{ url_for('main.download_report', type='csv') }}'">
+Download CSV
+</button>
 
-{% for item in data.suspicious_commits %}
-<tr>
-    <td>{{ item.commit_1 }}</td>
-    <td>{{ item.commit_2 }}</td>
-    <td>{{ "%.2f"|format(item.similarity) }}</td>
-</tr>
-{% endfor %}
-</table>
+<br><br>
 
-<hr>
+<button class="primary-btn"
+onclick="location.href='{{ url_for('main.download_report', type='pdf') }}'">
+Download PDF
+</button>
 
-<h2>Side‑by‑Side Code Comparison</h2>
-
-<a href="{{ url_for('main.compare_view') }}">
-    Open Code Compare Page
-</a>
-
-<hr>
-
-<h2>Download Reports</h2>
-
-<a href="{{ url_for('main.download_report', type='csv') }}">
-    Download CSV
-</a><br>
-
-<a href="{{ url_for('main.download_report', type='pdf') }}">
-    Download PDF
-</a>
+</div>
 
 {% endblock %}

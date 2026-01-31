@@ -1,66 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>Repository Similarity Heatmap</h2>
+<div class="card" style="text-align:center; max-width:900px; margin:auto;">
 
-<canvas id="heatmap" width="700" height="500"></canvas>
+<h1 style="font-size:42px;">
+GitHub Plagiarism Detection System
+</h1>
 
-<script>
-const repoLabels = {{ data.repositories | tojson }};
-const similarityMatrix = {{ data.similarity_matrix | tojson }};
+<p style="opacity:.8; font-size:18px; margin-top:20px;">
+Automatically compare repositories, detect suspicious overlaps,
+and generate explainable plagiarism insights — all in one place.
+</p>
 
-const heatmapData = [];
+<br><br>
 
-for (let i = 0; i < similarityMatrix.length; i++) {
-    for (let j = 0; j < similarityMatrix[i].length; j++) {
-        heatmapData.push({
-            x: repoLabels[j],
-            y: repoLabels[i],
-            v: similarityMatrix[i][j]
-        });
-    }
-}
+<button class="primary-btn"
+        onclick="location.href='{{ url_for('main.analyze') }}'">
+Get Started →
+</button>
 
-new Chart(document.getElementById("heatmap"), {
-    type: "matrix",
-    data: {
-        datasets: [{
-            label: "Similarity Score",
-            data: heatmapData,
-            backgroundColor(ctx) {
-                const value = ctx.raw.v;
-                if (value > 0.7) {
-                    return `rgba(255, 0, 0, ${value})`;   // suspicious
-                }
-                return `rgba(0, 180, 0, 0.3)`;           // safe
-            },
-            width: 40,
-            height: 40
-        }]
-    },
-    options: {
-        plugins: {
-            tooltip: {
-                callbacks: {
-                    label: (ctx) =>
-                        `Similarity: ${ctx.raw.v.toFixed(2)}`
-                }
-            }
-        },
-        scales: {
-            x: {
-                type: "category",
-                labels: repoLabels,
-                title: { display: true, text: "Repositories" }
-            },
-            y: {
-                type: "category",
-                labels: repoLabels,
-                title: { display: true, text: "Repositories" }
-            }
-        }
-    }
-});
-</script>
+</div>
 
 {% endblock %}

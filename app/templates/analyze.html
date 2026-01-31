@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card" style="max-width:1000px;margin:auto;">
+
+<h2>Enter GitHub Repository URLs</h2>
+<p style="opacity:.7;">Add repositories to compare similarity</p>
+
+<form method="post">
+
+<div id="repo-container"></div>
+
+<br>
+
+<button type="button" class="primary-btn" onclick="addRepo()">
++ Add Repository
+</button>
+
+<br><br>
+
+<label>Similarity Threshold</label><br>
+<input type="range" name="threshold"
+       min="0.3" max="0.95" step="0.05" value="0.8"
+       style="width:60%;">
+
+<br><br>
+
+<input type="hidden" name="language" value=".py">
+
+<button class="primary-btn" type="submit">
+Run Analysis
+</button>
+
+</form>
+</div>
+
+<script>
+
+function addRepo(value="") {
+    const row = document.createElement("div");
+    row.style.display="flex";
+    row.style.gap="10px";
+    row.style.marginBottom="12px";
+
+    row.innerHTML = `
+        <input name="repo_urls[]" value="${value}"
+            placeholder="https://github.com/user/repo"
+            style="flex:1;padding:12px;border-radius:10px;border:1px solid #334155;background:#020617;color:white;">
+        <button type="button" onclick="this.parentNode.remove()"
+            style="background:#7f1d1d;border:none;color:white;padding:0 14px;border-radius:10px;cursor:pointer;">
+            ✕
+        </button>
+    `;
+
+    document.getElementById("repo-container").appendChild(row);
+}
+
+addRepo();
+addRepo();
+
+</script>
+
+{% endblock %}
