@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Analyze GitHub Repositories</h2>
+
+<form method="POST">
+    <label>GitHub Repository URLs (one per line)</label>
+    <textarea name="repo_urls" rows="6" required></textarea>
+
+    <label>Programming Language</label>
+    <select name="language">
+        <option value=".py">Python</option>
+        <option value=".java">Java</option>
+    </select>
+
+    <label>Similarity Threshold (0–1)</label>
+    <input type="number" name="threshold" step="0.05" value="0.7">
+
+    <button type="submit">Start Analysis</button>
+</form>
+
+{% endblock %}

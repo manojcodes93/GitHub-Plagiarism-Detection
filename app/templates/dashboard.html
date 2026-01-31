@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Similarity Dashboard</h2>
+
+<table>
+    <tr>
+        <th>Repository A</th>
+        <th>Repository B</th>
+        <th>Similarity Score</th>
+        <th>Details</th>
+    </tr>
+
+    {% for item in data.flagged_pairs %}
+    <tr>
+        <td>{{ item.repo1 }}</td>
+        <td>{{ item.repo2 }}</td>
+        <td>{{ item.score }}</td>
+        <td>
+            <a href="/details?pair={{ loop.index0 }}">View</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}
