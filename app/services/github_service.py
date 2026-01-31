@@ -1,10 +1,14 @@
 import git
 import os
+from ..config import Config
 
 CLONE_DIR = "data/cloned_repos"
 
+
 def clone_repositories(repo_urls):
     paths = []
+
+    os.makedirs(CLONE_DIR, exist_ok=True)
 
     for url in repo_urls:
         repo_name = url.rstrip("/").split("/")[-1]
@@ -17,12 +21,16 @@ def clone_repositories(repo_urls):
 
     return paths
 
+
 def extract_commit_messages(repo_path):
     repo = git.Repo(repo_path)
-    commits = list(repo.iter_commits())
+
+    commits = list(repo.iter_commits(max_count=Config.MAX_COMMITS))
 
     messages = []
     for commit in commits:
-        messages.append(commit.message.strip())
+        msg = commit.message.strip()
+        if msg:
+            messages.append(msg)
 
     return messages
