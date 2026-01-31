@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, send_file
 from app.services.report_generator import generate_report
 
 main = Blueprint("main", __name__)
@@ -14,3 +14,19 @@ def index():
         return render_template("details.html", data=data)
 
     return render_template("index.html")
+
+
+@main.route("/download/csv")
+def download_csv():
+    return send_file(
+        "data/reports/plagiarism_report.csv",
+        as_attachment=True
+    )
+
+
+@main.route("/download/pdf")
+def download_pdf():
+    return send_file(
+        "data/reports/plagiarism_report.pdf",
+        as_attachment=True
+    )
