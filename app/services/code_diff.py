@@ -1,21 +1,32 @@
-import difflib
+import html
 
-def generate_side_by_side_diff(code1, code2):
-    lines1 = code1.splitlines()
-    lines2 = code2.splitlines()
 
-    diff = difflib.ndiff(lines1, lines2)
+def generate_side_by_side_diff(left_code, right_code):
+    """
+    Very simple line‑based highlighter:
+    - identical normalized lines are highlighted
+    """
 
-    left_output = []
-    right_output = []
+    left_lines = left_code.splitlines()
+    right_lines = right_code.splitlines()
 
-    for line in diff:
-        if line.startswith("  "):  # common line
-            left_output.append(f"<span class='same'>{line[2:]}</span>")
-            right_output.append(f"<span class='same'>{line[2:]}</span>")
-        elif line.startswith("- "):  # only in left
-            left_output.append(f"<span class='diff'>{line[2:]}</span>")
-        elif line.startswith("+ "):  # only in right
-            right_output.append(f"<span class='diff'>{line[2:]}</span>")
+    # normalize for comparison
+    left_norm = [l.strip() for l in left_lines]
+    right_norm = [r.strip() for r in right_lines]
 
-    return "\n".join(left_output), "\n".join(right_output)
+    common = set(left_norm) & set(right_norm)
+
+    def highlight(lines, norm_lines):
+        out = []
+        for raw, norm in zip(lines, norm_lines):
+            escaped = html.escape(raw)
+            if norm and norm in common:
+                out.append(f"<mark>{escaped}</mark>")
+            else:
+                out.append(escaped)
+        return "<br>".join(out)
+
+    left_html = highlight(left_lines, left_norm)
+    right_html = highlight(right_lines, right_norm)
+
+    return left_html, right_html

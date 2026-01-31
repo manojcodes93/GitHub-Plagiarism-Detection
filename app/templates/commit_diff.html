@@ -5,23 +5,75 @@
 
 <h2>Commit Message Similarity</h2>
 
+<p style="opacity:.8; margin-bottom:16px;">
+Repo‑aware commit similarity showing suspiciously similar human‑written commits
+across repositories.
+</p>
+
+{% set shown = false %}
+
+{% if rows and rows|length > 0 %}
+
 <div class="table-wrap">
-<table border="1" cellpadding="8">
+<table border="1" cellpadding="10" style="width:100%; border-collapse:collapse;">
+
 <tr>
-<th>Commit A</th>
-<th>Commit B</th>
-<th>Similarity</th>
+    <th>Repo A</th>
+    <th>Commit A</th>
+    <th>Repo B</th>
+    <th>Commit B</th>
+    <th>Similarity</th>
 </tr>
 
-{% for a,b,s in rows %}
+{% for ra, a, rb, b, s in rows %}
+{% set score = s|float %}
+
+{% if score >= threshold %}
+{% set shown = true %}
+
+{% if score >= 0.8 %}
+    {% set color = "#7f1d1d" %}
+    {% set label = "High" %}
+{% elif score >= 0.6 %}
+    {% set color = "#713f12" %}
+    {% set label = "Medium" %}
+{% else %}
+    {% set color = "#14532d" %}
+    {% set label = "Low" %}
+{% endif %}
+
 <tr>
-<td>{{ a }}</td>
-<td>{{ b }}</td>
-<td>{{ s }}</td>
+    <td><strong>{{ ra }}</strong></td>
+    <td style="max-width:320px; word-break:break-word;">
+        {{ a }}
+    </td>
+    <td><strong>{{ rb }}</strong></td>
+    <td style="max-width:320px; word-break:break-word;">
+        {{ b }}
+    </td>
+    <td align="center" style="background:{{ color }}; font-weight:600;">
+        {{ '%.2f'|format(score) }}<br>
+        <span style="font-size:12px; opacity:.85;">{{ label }}</span>
+    </td>
 </tr>
+
+{% endif %}
 {% endfor %}
+
 </table>
 </div>
+
+{% if not shown %}
+<p style="opacity:.7; margin-top:12px;">
+No suspicious commit similarity detected at the current threshold.
+</p>
+{% endif %}
+
+{% else %}
+<p style="opacity:.7;">
+No suspicious commit similarity detected.
+</p>
+{% endif %}
 
 <br>
 

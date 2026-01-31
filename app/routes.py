@@ -8,14 +8,12 @@ main = Blueprint("main", __name__)
 
 LAST_REPORT = {}
 
-
 # -------------------------
 # Dashboard
 # -------------------------
 @main.route("/")
 def dashboard():
     return render_template("dashboard.html")
-
 
 # -------------------------
 # Analyze
@@ -24,7 +22,6 @@ def dashboard():
 def analyze():
 
     if request.method == "POST":
-
         repo_urls = request.form.getlist("repo_urls[]")
         language = request.form.get("language", ".py")
         threshold = float(request.form.get("threshold", 0.8))
@@ -35,13 +32,15 @@ def analyze():
 
         data = generate_report(repo_urls, language, threshold)
 
+        # store threshold for templates
+        data["threshold"] = threshold
+
         global LAST_REPORT
         LAST_REPORT = data
 
         return redirect(url_for("main.results_home"))
 
     return render_template("analyze.html")
-
 
 # -------------------------
 # Results hub
@@ -50,17 +49,16 @@ def analyze():
 def results_home():
     return render_template("details.html", data=LAST_REPORT)
 
-
 # -------------------------
-# Commit similarity
+# Commit similarity (FIXED)
 # -------------------------
 @main.route("/commit-diff")
 def commit_diff_page():
     return render_template(
         "commit_diff.html",
-        rows=LAST_REPORT.get("suspicious_commits", [])
+        rows=LAST_REPORT.get("suspicious_commits_with_repo", []),
+        threshold=LAST_REPORT.get("threshold", 0.8)
     )
-
 
 # -------------------------
 # Repo matrix
@@ -73,9 +71,8 @@ def repo_matrix_page():
         matrix=LAST_REPORT.get("similarity_matrix", [])
     )
 
-
 # -------------------------
-# Side‑by‑side compare — SAFE FIX
+# Side-by-side compare
 # -------------------------
 @main.route("/compare")
 def compare_view():
@@ -83,33 +80,15 @@ def compare_view():
     left_html = LAST_REPORT.get("code_left")
     right_html = LAST_REPORT.get("code_right")
 
-    # ✅ fallback if missing
     if not left_html or not right_html:
-        pairs = LAST_REPORT.get("file_similarity_pairs", [])
-
-        if pairs:
-            ra, rb, fa, fb, score = pairs[0]
-            repo_texts = LAST_REPORT.get("repo_file_texts", {})
-
-            try:
-                left_code = repo_texts[ra][fa]
-                right_code = repo_texts[rb][fb]
-                left_html, right_html = generate_side_by_side_diff(
-                    left_code, right_code
-                )
-            except Exception:
-                left_html = "<p>No code available</p>"
-                right_html = "<p>No code available</p>"
-        else:
-            left_html = "<p>No comparison data yet</p>"
-            right_html = "<p>No comparison data yet</p>"
+        left_html = "<p>No comparison data yet</p>"
+        right_html = "<p>No comparison data yet</p>"
 
     return render_template(
         "compare.html",
         left_html=left_html,
         right_html=right_html
     )
-
 
 # -------------------------
 # Downloads

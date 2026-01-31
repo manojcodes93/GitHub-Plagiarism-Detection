@@ -57,3 +57,18 @@ th, td {
 .diff {
     display: block;
 }
+
+.spinner {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 6px solid rgba(56, 189, 248, 0.25); /* faint ring */
+    border-top-color: #38bdf8;                 /* moving highlight */
+    animation: ringSpin 0.9s linear infinite;
+}
+
+@keyframes ringSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}

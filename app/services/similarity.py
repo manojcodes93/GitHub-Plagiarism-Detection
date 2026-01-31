@@ -11,6 +11,11 @@ def compute_repo_similarity_matrix(repo_file_texts):
         merged = "\n".join(repo_file_texts[name])
         docs.append(merged if merged.strip() else f"empty_{name}")
 
+    # ✅ SAFETY GUARD — prevents empty vocabulary crash
+    if not any(d.strip() for d in docs):
+        size = len(repo_names)
+        return repo_names, [[0.0 for _ in range(size)] for _ in range(size)]
+
     vectorizer = TfidfVectorizer(max_features=8000)
     tfidf = vectorizer.fit_transform(docs)
 
@@ -35,6 +40,10 @@ def compute_file_similarity_pairs(repo_file_texts, threshold=0.7):
                 continue
 
             docs = files_a + files_b
+
+            # ✅ SAFETY GUARD FOR FILE LEVEL
+            if not any(d.strip() for d in docs):
+                continue
 
             vectorizer = TfidfVectorizer(max_features=4000)
             tfidf = vectorizer.fit_transform(docs)

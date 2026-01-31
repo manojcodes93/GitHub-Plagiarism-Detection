@@ -1,67 +1,55 @@
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+from difflib import SequenceMatcher
 
-
-def compute_commit_message_similarity(records, threshold=0.6):
+def is_automated_commit(message: str) -> bool:
     """
-    Accepts:
-    - list[str]
-    - list[{"repo": name, "message": msg}]
-    Returns tuples compatible with exporter + template
+    Returns True if the commit message is likely automated
+    (dependabot, bot, merge, version bump).
     """
+    if not message:
+        return True
 
-    if not records or len(records) < 2:
-        return []
+    msg = message.lower().strip()
 
-    # -------------------------
-    # Normalize input safely
-    # -------------------------
-    messages = []
-    repos = []
-
-    for r in records:
-        if isinstance(r, dict):
-            msg = str(r.get("message", "")).strip()
-            repo = r.get("repo", "unknown")
-        else:
-            msg = str(r).strip()
-            repo = "unknown"
-
-        if msg:
-            messages.append(msg)
-            repos.append(repo)
-
-    if len(messages) < 2:
-        return []
-
-    # -------------------------
-    # Vectorize
-    # -------------------------
-    vectorizer = TfidfVectorizer(
-        stop_words="english",
-        ngram_range=(1, 2)
+    return (
+        msg.startswith("merge")
+        or msg.startswith("bump ")
+        or "dependabot" in msg
+        or "bot" in msg
     )
 
-    tfidf = vectorizer.fit_transform(messages)
-    sim = cosine_similarity(tfidf)
 
-    # -------------------------
-    # Build results
-    # -------------------------
+def compute_commit_message_similarity(commits, threshold=0.6):
+    """
+    Compare commit messages and return suspiciously similar pairs.
+    Automated commits are ignored.
+    """
+
+    filtered = []
+
+    # ---- FILTER AUTOMATED COMMITS ----
+    for c in commits:
+        # c may be dict or string depending on extractor
+        if isinstance(c, dict):
+            msg = c.get("message", "")
+        else:
+            msg = str(c)
+
+        if is_automated_commit(msg):
+            continue
+
+        filtered.append(msg.strip())
+
     results = []
+    n = len(filtered)
 
-    for i in range(len(messages)):
-        for j in range(i + 1, len(messages)):
+    for i in range(n):
+        for j in range(i + 1, n):
+            a = filtered[i]
+            b = filtered[j]
 
-            score = float(sim[i][j])
+            score = SequenceMatcher(None, a, b).ratio()
 
             if score >= threshold:
-                results.append((
-                    messages[i],
-                    messages[j],
-                    round(score, 3)
-                ))
-
-    results.sort(key=lambda x: x[2], reverse=True)
+                results.append((a, b, round(score, 2)))
 
     return results

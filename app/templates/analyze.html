@@ -6,7 +6,7 @@
 <h2>Enter GitHub Repository URLs</h2>
 <p style="opacity:.7;">Add repositories to compare similarity</p>
 
-<form method="post">
+<form method="post" onsubmit="startAnalysis()">
 
 <div id="repo-container"></div>
 
@@ -25,23 +25,39 @@
        id="thresholdSlider" oninput="updateThresholdInfo()">
 
 <div style="font-size:14px;">
-    Value: <span id="thresholdValue">0.70</span> —
-    <span id="thresholdLabel">Balanced</span>
+    Value: <span id="thresholdValue">0.80</span> —
+    <span id="thresholdLabel">Strict</span>
 </div>
 
 <br><br>
 
 <input type="hidden" name="language" value=".py">
 
-<button class="primary-btn" type="submit">
+<button class="primary-btn" type="submit" id="runBtn">
 Run Analysis
 </button>
 
+<button class="primary-btn"
+        type="button"
+        id="stopBtn"
+        onclick="stopAnalysis()"
+        style="display:none;background:#7f1d1d;">
+Stop Analysis
+</button>
+
 </form>
+
+<!-- 🔄 Processing Section -->
+<div id="processing" style="display:none;margin-top:40px;text-align:center;">
+    <div class="spinner"></div>
+    <p style="opacity:.7;margin-top:12px;">
+        Analyzing repositories… please wait
+    </p>
+</div>
+
 </div>
 
 <script>
-
 function addRepo(value="") {
     const row = document.createElement("div");
     row.style.display="flex";
@@ -64,20 +80,34 @@ function addRepo(value="") {
 addRepo();
 addRepo();
 
-</script>
-
-<script>
 function updateThresholdInfo() {
-  const v = parseFloat(document.getElementById("thresholdSlider").value);
-  document.getElementById("thresholdValue").innerText = v.toFixed(2);
+    const v = parseFloat(document.getElementById("thresholdSlider").value);
+    document.getElementById("thresholdValue").innerText = v.toFixed(2);
 
-  let label = "Balanced";
-  if (v >= 0.8) label = "Strict";
-  else if (v < 0.55) label = "Loose";
+    let label = "Balanced";
+    if (v >= 0.8) label = "Strict";
+    else if (v < 0.55) label = "Loose";
 
-  document.getElementById("thresholdLabel").innerText = label;
+    document.getElementById("thresholdLabel").innerText = label;
 }
 updateThresholdInfo();
+
+function startAnalysis() {
+    document.getElementById("processing").style.display = "block";
+    document.getElementById("runBtn").style.display = "none";
+    document.getElementById("stopBtn").style.display = "block";
+
+    setTimeout(() => {
+        document.getElementById("processing")
+            .scrollIntoView({ behavior: "smooth" });
+    }, 100);
+}
+
+function stopAnalysis() {
+    document.getElementById("processing").style.display = "none";
+    document.getElementById("runBtn").style.display = "block";
+    document.getElementById("stopBtn").style.display = "none";
+}
 </script>
 
 {% endblock %}

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+
 {% block content %}
 
 <div class="card">
@@ -17,18 +18,20 @@ Color guide:
 <table border="1" cellpadding="10" style="border-collapse:collapse; width:100%;">
 
 <tr>
-<th>Repo</th>
-{% for n in names %}
-<th>{{ n }}</th>
-{% endfor %}
+    <th>Repo</th>
+    {% for n in names %}
+    <th>{{ n }}</th>
+    {% endfor %}
 </tr>
 
 {% for row in matrix %}
+{% set row_repo = names[loop.index0] %}
 <tr>
 
-<th>{{ names[loop.index0] }}</th>
+<th>{{ row_repo }}</th>
 
 {% for v in row %}
+{% set col_repo = names[loop.index0] %}
 
 {% if v is none %}
 <td style="background:#020617;">—</td>
@@ -48,6 +51,9 @@ Color guide:
     {% set label = "High similarity" %}
 {% endif %}
 
+{% set key1 = row_repo ~ "__" ~ col_repo %}
+{% set key2 = col_repo ~ "__" ~ row_repo %}
+
 <td style="
     background: {{ bg }};
     text-align:center;
@@ -55,12 +61,24 @@ Color guide:
     border:1px solid #1f2937;
 "
 title="Similarity: {{ '%.3f'|format(score) }} — {{ label }}">
-{{ '%.3f'|format(score) }}
+
+<div>{{ '%.3f'|format(score) }}</div>
+
+{% if repo_similarity_explanations and (key1 in repo_similarity_explanations or key2 in repo_similarity_explanations) %}
+    <div style="font-size:12px; opacity:.75; margin-top:4px;">
+        {{ repo_similarity_explanations[key1] if key1 in repo_similarity_explanations else repo_similarity_explanations[key2] }}
+    </div>
+{% else %}
+    <div style="font-size:12px; opacity:.55; margin-top:4px;">
+        No strong file‑level evidence
+    </div>
+{% endif %}
+
 </td>
 
 {% endif %}
-
 {% endfor %}
+
 </tr>
 {% endfor %}
 

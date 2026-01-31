@@ -76,22 +76,16 @@ body {
     transition:all .18s ease;
 }
 
-/* subtle underline on hover */
 .nav-btn:hover {
     color:white;
     background:#0f172a;
 }
 
-/* current page indicator */
 .nav-btn.active {
     color:white;
     font-weight:600;
     border-bottom:2px solid #818cf8;
-    background:transparent;
 }
-
-
-
 
 /* ---------- CONTENT ---------- */
 
@@ -131,6 +125,33 @@ body {
     overflow-x:auto;
 }
 
+/* ---------- LOADING SPINNER ---------- */
+
+.loader-wrap {
+    display:none;
+    align-items:center;
+    gap:14px;
+    margin-top:20px;
+}
+
+.loader {
+    width:26px;
+    height:26px;
+    border:3px solid #1f2937;
+    border-top:3px solid #818cf8;
+    border-radius:50%;
+    animation:spin .9s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loader-text {
+    font-size:14px;
+    opacity:.85;
+}
+
 </style>
 </head>
 
@@ -138,7 +159,6 @@ body {
 
 <div class="navbar">
 
-    <!-- BRAND (LOGO + NAME) -->
     <div class="brand-wrap"
          onclick="location.href='{{ url_for('main.dashboard') }}'">
 
@@ -149,7 +169,6 @@ body {
         <div class="brand-text">CodeMirror</div>
     </div>
 
-    <!-- NAVIGATION -->
     <div class="nav-links">
 
         <button class="nav-btn {% if request.endpoint == 'main.dashboard' %}active{% endif %}"
