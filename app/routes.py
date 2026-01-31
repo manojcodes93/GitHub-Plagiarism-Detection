@@ -38,7 +38,7 @@ def analyze():
         global LAST_REPORT
         LAST_REPORT = data
 
-        return render_template("details.html", data=data)
+        return redirect(url_for("main.results_home"))
 
     return render_template("analyze.html")
 

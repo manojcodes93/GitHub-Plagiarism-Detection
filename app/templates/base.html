@@ -13,7 +13,7 @@ body {
     overflow-x:hidden;
 }
 
-/* NAVBAR */
+/* ---------- NAVBAR ---------- */
 
 .navbar {
     position:fixed;
@@ -31,7 +31,7 @@ body {
     border-bottom:1px solid #1f2937;
 }
 
-/* BRAND */
+/* ---------- BRAND ---------- */
 
 .brand-wrap {
     display:flex;
@@ -58,7 +58,7 @@ body {
     color:#818cf8;
 }
 
-/* NAV BUTTONS */
+/* ---------- NAV LINKS ---------- */
 
 .nav-links {
     display:flex;
@@ -67,34 +67,39 @@ body {
 
 .nav-btn {
     background:transparent;
-    border:1px solid #334155;
-    color:white;
-    padding:8px 18px;
-    border-radius:10px;
+    border:none;
+    color:#cbd5f1;
+    padding:8px 14px;
+    border-radius:8px;
     cursor:pointer;
-    transition:.25s;
     font-size:14px;
+    transition:all .18s ease;
 }
 
+/* subtle underline on hover */
 .nav-btn:hover {
-    background:#1e293b;
-    border-color:#818cf8;
-    box-shadow:0 0 12px rgba(129,140,248,.35);
+    color:white;
+    background:#0f172a;
 }
 
+/* current page indicator */
 .nav-btn.active {
-    background:#1e293b;
-    border-color:#8b5cf6;
-    box-shadow:0 0 14px rgba(139,92,246,.45);
+    color:white;
+    font-weight:600;
+    border-bottom:2px solid #818cf8;
+    background:transparent;
 }
 
-/* CONTENT */
+
+
+
+/* ---------- CONTENT ---------- */
 
 .content {
     padding:120px 80px 60px 80px;
 }
 
-/* BUTTONS */
+/* ---------- BUTTONS ---------- */
 
 .primary-btn {
     background:linear-gradient(90deg,#6366f1,#8b5cf6);
@@ -112,7 +117,7 @@ body {
     box-shadow:0 10px 30px rgba(99,102,241,.45);
 }
 
-/* CARDS */
+/* ---------- CARDS ---------- */
 
 .card {
     background:rgba(15,23,42,.75);
@@ -133,7 +138,7 @@ body {
 
 <div class="navbar">
 
-    <!-- BRAND -->
+    <!-- BRAND (LOGO + NAME) -->
     <div class="brand-wrap"
          onclick="location.href='{{ url_for('main.dashboard') }}'">
 
@@ -144,7 +149,7 @@ body {
         <div class="brand-text">CodeMirror</div>
     </div>
 
-    <!-- NAV -->
+    <!-- NAVIGATION -->
     <div class="nav-links">
 
         <button class="nav-btn {% if request.endpoint == 'main.dashboard' %}active{% endif %}"

@@ -5,8 +5,16 @@
 
 <h2>Repository Similarity Matrix</h2>
 
+<p style="opacity:.8; margin-bottom:18px;">
+Color guide:
+🟢 Low &nbsp;&nbsp;
+🟡 Medium &nbsp;&nbsp;
+🔴 High similarity
+</p>
+
 <div class="table-wrap">
-<table border="1" cellpadding="8">
+
+<table border="1" cellpadding="10" style="border-collapse:collapse; width:100%;">
 
 <tr>
 <th>Repo</th>
@@ -17,14 +25,47 @@
 
 {% for row in matrix %}
 <tr>
+
 <th>{{ names[loop.index0] }}</th>
+
 {% for v in row %}
-<td>{{ v if v is not none else "—" }}</td>
+
+{% if v is none %}
+<td style="background:#020617;">—</td>
+
+{% else %}
+
+{% set score = v|float %}
+
+{% if score < 0.4 %}
+    {% set bg = "#14532d" %}
+    {% set label = "Low similarity" %}
+{% elif score < 0.7 %}
+    {% set bg = "#713f12" %}
+    {% set label = "Medium similarity" %}
+{% else %}
+    {% set bg = "#7f1d1d" %}
+    {% set label = "High similarity" %}
+{% endif %}
+
+<td style="
+    background: {{ bg }};
+    text-align:center;
+    font-weight:600;
+    border:1px solid #1f2937;
+"
+title="Similarity: {{ '%.3f'|format(score) }} — {{ label }}">
+{{ '%.3f'|format(score) }}
+</td>
+
+{% endif %}
+
 {% endfor %}
 </tr>
 {% endfor %}
 
 </table>
+
 </div>
 
 <br>

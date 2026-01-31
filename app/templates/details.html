@@ -1,6 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
 
+{% if empty %}
+
+<div class="card">
+<h2>No Results Yet</h2>
+<p>Run an analysis first before seeing.</p>
+</div>
+
+{% else %}
+
 <div class="card">
 
 <h2>Analysis Results</h2>
@@ -35,13 +44,13 @@ onclick="location.href='{{ url_for('main.download_report', type='csv') }}'">
 Download CSV
 </button>
 
-<br><br>
-
 <button class="nav-btn"
 onclick="location.href='{{ url_for('main.download_report', type='pdf') }}'">
 Download PDF
 </button>
 
 </div>
+
+{% endif %}
 
 {% endblock %}
