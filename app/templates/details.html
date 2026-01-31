@@ -1,10 +1,28 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>Side‑by‑Side Code Comparison</h2>
+<h2>Commit Message Similarity Detection</h2>
 
-<p><strong>Highlighted lines indicate possible plagiarism</strong></p>
+{% if data.suspicious_commits|length == 0 %}
+    <p>No suspicious commit messages detected.</p>
+{% else %}
+<table>
+    <tr>
+        <th>Commit Message A</th>
+        <th>Commit Message B</th>
+        <th>Similarity</th>
+    </tr>
+    {% for item in data.suspicious_commits %}
+    <tr>
+        <td>{{ item.commit_1 }}</td>
+        <td>{{ item.commit_2 }}</td>
+        <td>{{ item.similarity }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
 
+<h2>Side‑by‑Side Code Proof</h2>
 <div class="code-compare">
     <pre class="code-block">{{ data.code_left | safe }}</pre>
     <pre class="code-block">{{ data.code_right | safe }}</pre>

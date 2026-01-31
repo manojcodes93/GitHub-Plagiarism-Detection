@@ -24,9 +24,21 @@ button {
     padding: 8px;
 }
 
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+
 .code-compare {
     display: flex;
     gap: 10px;
+    margin-top: 30px;
 }
 
 .code-block {
@@ -38,11 +50,10 @@ button {
 }
 
 .same {
-    background-color: rgba(255, 0, 0, 0.35); /* copied */
+    background-color: rgba(255, 0, 0, 0.35);
     display: block;
 }
 
 .diff {
-    background-color: transparent;
     display: block;
 }
