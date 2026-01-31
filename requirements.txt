@@ -1,0 +1,6 @@
+Flask
+GitPython
+requests
+scikit-learn
+nltk
+python-dotenv
