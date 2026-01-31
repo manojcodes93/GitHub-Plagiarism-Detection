@@ -5,7 +5,7 @@
 
 <h2>Analysis Results</h2>
 
-<br>
+<h3>Comparisons</h3>
 
 <button class="primary-btn"
 onclick="location.href='{{ url_for('main.commit_diff_page') }}'">
@@ -26,16 +26,18 @@ onclick="location.href='{{ url_for('main.compare_view') }}'">
 View Side‑by‑Side Code
 </button>
 
-<br><br>
+<hr style="margin:30px 0; opacity:.2;">
 
-<button class="primary-btn"
+<h3>Downloads</h3>
+
+<button class="nav-btn"
 onclick="location.href='{{ url_for('main.download_report', type='csv') }}'">
 Download CSV
 </button>
 
 <br><br>
 
-<button class="primary-btn"
+<button class="nav-btn"
 onclick="location.href='{{ url_for('main.download_report', type='pdf') }}'">
 Download PDF
 </button>

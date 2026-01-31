@@ -5,41 +5,33 @@
 
 <h2>Repository Similarity Matrix</h2>
 
-{% if names and matrix %}
+<div class="table-wrap">
+<table border="1" cellpadding="8">
 
-<table border="1" cellpadding="8" style="width:100%;margin-top:20px;">
 <tr>
-    <th>Repo</th>
-    {% for n in names %}
-        <th>{{ n }}</th>
-    {% endfor %}
+<th>Repo</th>
+{% for n in names %}
+<th>{{ n }}</th>
+{% endfor %}
 </tr>
 
 {% for row in matrix %}
 <tr>
-    <th>{{ names[loop.index0] }}</th>
-    {% for v in row %}
-        <td>
-            {% if v is not none %}
-                {{ "%.3f"|format(v) }}
-            {% else %}
-                —
-            {% endif %}
-        </td>
-    {% endfor %}
+<th>{{ names[loop.index0] }}</th>
+{% for v in row %}
+<td>{{ v if v is not none else "—" }}</td>
+{% endfor %}
 </tr>
 {% endfor %}
 
 </table>
-
-{% else %}
-<p>No similarity matrix available yet.</p>
-{% endif %}
+</div>
 
 <br>
+
 <button class="primary-btn"
-        onclick="location.href='{{ url_for('main.dashboard') }}'">
-Back to Dashboard
+onclick="location.href='{{ url_for('main.results_home') }}'">
+Back to Results
 </button>
 
 </div>
