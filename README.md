@@ -135,32 +135,6 @@ Download reports if required
 
 ---
 
-## Project Structure
-```
-GitHub-Plagiarism-Detection/
-│
-├── app.py
-├── routes.py
-├── services/
-│   ├── report_generator.py
-│   ├── similarity.py
-│   └── commit_message_similarity.py
-│
-├── templates/
-│   ├── dashboard.html
-│   ├── analyze.html
-│   ├── details.html
-│   ├── commit_diff.html
-│   └── repo_matrix.html
-│
-├── static/
-│   ├── css/
-│   └── img/
-│
-├── requirements.txt
-└── README.md
-```
-
 ## Testing
 
 The project has been tested using:
