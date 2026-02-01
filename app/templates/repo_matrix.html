@@ -8,9 +8,9 @@
 
 <p style="opacity:.8; margin-bottom:18px;">
 Color guide:
-Low &nbsp;&nbsp;
-Medium &nbsp;&nbsp;
-High similarity
+🟢 Low &nbsp;&nbsp;
+🟡 Medium &nbsp;&nbsp;
+🔴 High similarity
 </p>
 
 <div class="table-wrap">
@@ -88,8 +88,8 @@ title="Similarity: {{ '%.3f'|format(score) }} — {{ label }}">
 
 <br>
 
-<button class="primary-btn"
-onclick="location.href='{{ url_for('main.results_home') }}'">
+<button class="primary-btn get-started-btn"
+        onclick="location.href='{{ url_for('main.results_home') }}'">
 Back to Results
 </button>
 

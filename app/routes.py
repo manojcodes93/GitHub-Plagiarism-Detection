@@ -7,12 +7,16 @@ from .services.code_diff import generate_side_by_side_diff
 main = Blueprint("main", __name__)
 
 LAST_REPORT = {}
+ANALYSIS_ACTIVE = False
 
 # -------------------------
 # Dashboard
 # -------------------------
 @main.route("/")
 def dashboard():
+    global LAST_REPORT, ANALYSIS_ACTIVE
+    LAST_REPORT = {}
+    ANALYSIS_ACTIVE = False
     return render_template("dashboard.html")
 
 # -------------------------
@@ -35,8 +39,9 @@ def analyze():
         # store threshold for templates
         data["threshold"] = threshold
 
-        global LAST_REPORT
+        global LAST_REPORT, ANALYSIS_ACTIVE
         LAST_REPORT = data
+        ANALYSIS_ACTIVE = True
 
         return redirect(url_for("main.results_home"))
 
@@ -47,7 +52,18 @@ def analyze():
 # -------------------------
 @main.route("/results")
 def results_home():
-    return render_template("details.html", data=LAST_REPORT)
+    if not ANALYSIS_ACTIVE or not LAST_REPORT:
+        return render_template(
+            "details.html",
+            empty=True
+        )
+
+    return render_template(
+        "details.html",
+        empty=False,
+        data=LAST_REPORT
+    )
+
 
 # -------------------------
 # Commit similarity (FIXED)

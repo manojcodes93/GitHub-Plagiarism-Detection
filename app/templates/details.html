@@ -1,7 +1,14 @@
-
-
 {% extends "base.html" %}
 {% block content %}
+
+{% if empty %}
+<div class="card">
+  <h2>No Analysis Data</h2>
+  <p style="opacity:.7;">
+    Run an analysis to view plagiarism results.
+  </p>
+</div>
+{% else %}
 
 <div class="card">
 
@@ -12,9 +19,9 @@
 {% set confidence = "LOW" %}
 {% set confidence_color = "#14532d" %}
 
-{% for row in similarity_matrix %}
+{% for row in data.similarity_matrix %}
     {% for v in row %}
-        {% if v is not none and v|float >= 0.7 and file_similarity_table and file_similarity_table|length > 0 %}
+        {% if v is not none and v|float >= 0.7 %}
             {% set confidence = "HIGH" %}
             {% set confidence_color = "#7f1d1d" %}
         {% elif v is not none and v|float >= 0.4 and confidence != "HIGH" %}
@@ -24,7 +31,7 @@
     {% endfor %}
 {% endfor %}
 
-{% if suspicious_commits and suspicious_commits|length > 0 and confidence == "LOW" %}
+{% if data.suspicious_commits and data.suspicious_commits|length > 0 and confidence == "LOW" %}
     {% set confidence = "MEDIUM" %}
     {% set confidence_color = "#713f12" %}
 {% endif %}
@@ -38,58 +45,31 @@
     <div style="font-size:20px; font-weight:700;">
         Plagiarism Confidence: {{ confidence }}
     </div>
+
 </div>
-
-<hr>
-
-<h3>File‑Level Similarity</h3>
-
-{% if file_similarity_table and file_similarity_table|length > 0 %}
-<table style="width:100%; border-collapse:collapse;">
-<tr>
-    <th>Repo A</th>
-    <th>File #</th>
-    <th>Repo B</th>
-    <th>File #</th>
-    <th>Similarity</th>
-</tr>
-{% for row in file_similarity_table %}
-<tr>
-    <td>{{ row.repo_a }}</td>
-    <td>{{ row.file_a_index }}</td>
-    <td>{{ row.repo_b }}</td>
-    <td>{{ row.file_b_index }}</td>
-    <td>{{ row.similarity }}</td>
-</tr>
-{% endfor %}
-</table>
-{% else %}
-<p>No strong file‑level plagiarism detected.</p>
-{% endif %}
 
 <hr>
 
 <h3>Comparisons</h3>
 
-<button class="primary-btn"
+<button class="primary-btn compare-btn"
 onclick="location.href='{{ url_for('main.commit_diff_page') }}'">
 Commit Message Similarity
 </button>
 
-<br><br>
+<br>
 
-<button class="primary-btn"
+<button class="primary-btn compare-btn"
 onclick="location.href='{{ url_for('main.repo_matrix_page') }}'">
 Repository Similarity Matrix
 </button>
 
-<br><br>
+<br>
 
-<button class="primary-btn" onclick="showComingSoon(this)">
+<button class="primary-btn compare-btn" onclick="showComingSoon(this)">
 View Side‑by‑Side Code
 </button>
 
-<!-- COMING SOON MESSAGE (HIDDEN BY DEFAULT) -->
 <div id="sideBySideComingSoon"
      style="
         display:none;
@@ -109,17 +89,17 @@ View Side‑by‑Side Code
 
 <h3>Downloads</h3>
 
-<button class="download-btn"
-onclick="location.href='{{ url_for('main.download_report', type='csv') }}'">
-Download CSV
-</button>
+<div class="download-wrap">
+  <button class="download-btn"
+    onclick="location.href='{{ url_for('main.download_report', type='csv') }}'">
+    Download CSV
+  </button>
 
-<br><br>
-
-<button class="download-btn"
-onclick="location.href='{{ url_for('main.download_report', type='pdf') }}'">
-Download PDF
-</button>
+  <button class="download-btn"
+    onclick="location.href='{{ url_for('main.download_report', type='pdf') }}'">
+    Download PDF
+  </button>
+</div>
 
 </div>
 
@@ -127,11 +107,10 @@ Download PDF
 function showComingSoon(btn) {
     const box = document.getElementById("sideBySideComingSoon");
     box.style.display = "block";
-
-    // Optional UX polish
     btn.disabled = true;
     btn.innerText = "Side‑by‑Side (Coming Soon)";
 }
 </script>
 
+{% endif %}
 {% endblock %}

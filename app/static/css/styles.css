@@ -35,35 +35,75 @@ th, td {
     padding: 10px;
 }
 
-.code-compare {
+/* ========================= */
+/* BUTTON STYLES             */
+/* ========================= */
+
+.primary-btn {
+    background: #020617;
+    color: #e5e7eb;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.primary-btn:hover {
+    border-color: #38bdf8;
+}
+
+/* Same size for comparison buttons */
+.compare-btn {
+    width: 100%;
+    max-width: 320px;
+    height: 48px;
+    margin: 10px 0;
+    display: block;
+    text-align: center;
+}
+
+/* ========================= */
+/* DOWNLOAD BUTTONS (FIXED)  */
+/* ========================= */
+
+.download-wrap {
     display: flex;
-    gap: 10px;
-    margin-top: 30px;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 10px;
 }
 
-.code-block {
-    width: 50%;
-    background: #1e1e1e;
-    color: white;
-    padding: 10px;
-    overflow-x: auto;
+.download-btn {
+    flex: 1;
+    min-width: 220px;
+    height: 48px;
+    background: #020617;
+    color: #e5e7eb;
+    border-radius: 12px;
+    border: 1px solid #334155;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.same {
-    background-color: rgba(255, 0, 0, 0.35);
-    display: block;
+
+.download-btn:hover {
+    border-color: #38bdf8;
 }
 
-.diff {
-    display: block;
-}
+/* ========================= */
+/* SPINNER                   */
+/* ========================= */
 
 .spinner {
     width: 52px;
     height: 52px;
     border-radius: 50%;
-    border: 6px solid rgba(56, 189, 248, 0.25); /* faint ring */
-    border-top-color: #38bdf8;                 /* moving highlight */
+    border: 6px solid rgba(56, 189, 248, 0.25);
+    border-top-color: #38bdf8;
     animation: ringSpin 0.9s linear infinite;
 }
 
@@ -73,11 +113,25 @@ th, td {
     }
 }
 
-.compare-btn {
-    width: 100%;
-    max-width: 320px;
-    height: 48px;
-    margin: 10px 0;
-    display: block;
-    text-align: center;
+/* Fix range thumb end-gap without changing native look */
+input[type="range"] {
+    padding: 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    margin-left: -2px;
+    margin-right: -2px;
+}
+
+input[type="range"]::-moz-range-thumb {
+    margin-left: -2px;
+    margin-right: -2px;
+}
+
+
+/* Small Get Started button */
+.get-started-btn {
+    width: auto;              /* 🔑 not full width */
+    padding: 14px 36px;       /* horizontal size control */
+    display: inline-block;    /* prevents stretching */
 }

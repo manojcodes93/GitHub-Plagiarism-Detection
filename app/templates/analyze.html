@@ -12,7 +12,9 @@
 
 <br>
 
-<button type="button" class="primary-btn" onclick="addRepo()">
+<button type="button"
+        class="primary-btn get-started-btn"
+        onclick="addRepo()">
 + Add Repository
 </button>
 
@@ -33,11 +35,13 @@
 
 <input type="hidden" name="language" value=".py">
 
-<button class="primary-btn" type="submit" id="runBtn">
+<button class="primary-btn get-started-btn"
+        type="submit"
+        id="runBtn">
 Run Analysis
 </button>
 
-<button class="primary-btn"
+<button class="primary-btn get-started-btn"
         type="button"
         id="stopBtn"
         onclick="stopAnalysis()"
@@ -45,31 +49,64 @@ Run Analysis
 Stop Analysis
 </button>
 
+
 </form>
 
 <!-- 🔄 Processing Section -->
-<div id="processing" style="display:none;margin-top:40px;text-align:center;">
+<div id="processing"
+     style="
+        display:none;
+        margin-top:40px;
+        text-align:center;
+     ">
+
     <div class="spinner"></div>
+
     <p style="opacity:.7;margin-top:12px;">
         Analyzing repositories… please wait
     </p>
 </div>
+
 
 </div>
 
 <script>
 function addRepo(value="") {
     const row = document.createElement("div");
-    row.style.display="flex";
-    row.style.gap="10px";
-    row.style.marginBottom="12px";
+    row.style.display = "flex";
+    row.style.gap = "10px";
+    row.style.marginBottom = "12px";
+    row.style.alignItems = "center";
 
     row.innerHTML = `
         <input name="repo_urls[]" value="${value}"
             placeholder="https://github.com/user/repo"
-            style="flex:1;padding:12px;border-radius:10px;border:1px solid #334155;background:#020617;color:white;">
-        <button type="button" onclick="this.parentNode.remove()"
-            style="background:#7f1d1d;border:none;color:white;padding:0 14px;border-radius:10px;cursor:pointer;">
+            style="
+                flex:1 1 auto;
+                min-width:0;
+                padding:12px;
+                border-radius:10px;
+                border:1px solid #334155;
+                background:#020617;
+                color:white;
+            ">
+
+        <button type="button"
+            onclick="this.parentNode.remove()"
+            style="
+                width:36px;
+                height:36px;
+                background:#7f1d1d;
+                border:none;
+                color:white;
+                border-radius:8px;
+                cursor:pointer;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                font-size:18px;
+                line-height:1;
+            ">
             ✕
         </button>
     `;
