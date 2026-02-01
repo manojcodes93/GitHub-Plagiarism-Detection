@@ -105,6 +105,7 @@ th, td {
     border: 6px solid rgba(56, 189, 248, 0.25);
     border-top-color: #38bdf8;
     animation: ringSpin 0.9s linear infinite;
+    margin: auto;
 }
 
 @keyframes ringSpin {

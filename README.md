@@ -1,77 +1,100 @@
-### GitHub Plagiarism Detection System
-A web-based system to analyze GitHub repositories and detect potential code plagiarism using repository-level similarity, commit message analysis, and comparison metrics.
+# GitHub Plagiarism Detection System
 
-This project is designed for academic evaluation, demos, and learning purposes, with a clean UI and clear plagiarism confidence indicators.
+A web-based application designed to analyze GitHub repositories and detect potential source code plagiarism using repository similarity analysis and commit message comparison.
 
-## What does this project do?
-This system helps identify code similarity and potential plagiarism across multiple GitHub repositories.
+This project helps identify code reuse patterns across multiple repositories and provides an overall plagiarism confidence score to assist in academic and learning evaluations.
 
-You provide:
+---
 
-- GitHub repository URLs
-- A similarity threshold
+## Project Overview
 
-The system analyzes:
+The GitHub Plagiarism Detection System allows users to submit multiple GitHub repository URLs and analyze them for similarity.  
+It compares repositories at different levels and highlights potential plagiarism indicators in a clear and structured manner.
 
-- Repository-to-repository similarity
-- Commit message patterns
-- Code similarity signals
+This system is intended for:
+- Academic projects
+- Learning and experimentation
 
-And produces:
-
-- A plagiarism confidence score (Low / Medium / High)
-- Visual similarity comparisons
-- Downloadable reports
+---
 
 ## Key Features
-# Plagiarism Detection
-- Compares multiple GitHub repositories
-- Calculates similarity using configurable thresholds
-- Assigns Low / Medium / High plagiarism confidence
 
-# Similarity Analysis
-- Repository Similarity Matrix to visualize repo-to-repo similarity
-- Commit Message Similarity to detect suspicious commit patterns
-- Confidence summary derived from analysis results
+### Repository Analysis
+- Accepts multiple GitHub repository URLs
+- Requires a minimum of two repositories for comparison
+- Prevents deletion below the minimum repository requirement
+- Clones repositories locally for analysis
 
-# Navigation-Friendly Results
-- Results persist while navigating between comparison views
-- Results reset on fresh start to avoid stale data
-- Clear “No Analysis Data” state when no analysis is run
+### Similarity Detection
+- Repository-level similarity analysis
+- Commit message similarity detection
+- Configurable similarity threshold
+- Plagiarism confidence classification:
+  - Low
+  - Medium
+  - High
 
-# Report Downloads
-- Download analysis results as:
+### Results and Visualization
+- Repository similarity matrix
+- Commit message similarity comparison
+- Clear “No Analysis Data” state when no analysis is available
+- Results persist during navigation within the results section
 
--> CSV
--> PDF
+### Report Generation
+- Downloadable CSV report
+- Downloadable PDF report
 
-# Web Interface
-- Clean, modern UI
-- Step-by-step workflow:
-1. Add repositories
-2. Set similarity threshold
-3. Run analysis
-4. View results and comparisons
+### User Interface
+- Clean and responsive UI
+- Step-by-step analysis workflow
+- Loading spinner during analysis
+- Automatic scroll to analysis progress section
 
-## How the confidence levels work
-The system uses three confidence levels:
-- Low – Minimal similarity detected
-- Medium – Moderate similarity, requires review
-- High – Strong similarity, possible plagiarism
+---
 
-These levels help users quickly interpret results without analyzing raw similarity values.
+## How the System Works
 
-## Tech Stack
-- Backend: Python, Flask
-- Frontend: HTML, CSS, JavaScript
-- Data Processing: Custom similarity analysis logic
-- Reports: CSV and PDF generation
-- Styling: Custom UI components
-- Version Control: Git and GitHub
+1. User enters at least two GitHub repository URLs  
+2. User configures the similarity threshold  
+3. The system clones the repositories  
+4. Source code files are preprocessed  
+5. Similarity scores are computed  
+6. Plagiarism confidence is determined  
+7. Results and reports are displayed  
 
-## How to Run the Project
-# Option 1: Local Setup (Recommended)
+---
 
+## Technology Stack
+
+### Backend
+- Python
+- Flask
+
+### Frontend
+- HTML
+- CSS
+- JavaScript
+
+### Analysis and Reporting
+- Custom preprocessing logic
+- Similarity computation
+- CSV and PDF report generation
+
+### Version Control
+- Git
+- GitHub
+
+---
+
+## Installation and Setup
+
+### Prerequisites
+- Python 3.9 or higher
+- Git
+
+### Local Setup
+
+```bash
 git clone https://github.com/manojcodes93/GitHub-Plagiarism-Detection.git
 cd GitHub-Plagiarism-Detection
 
@@ -80,40 +103,48 @@ source venv/bin/activate   # On Windows: venv\Scripts\activate
 
 pip install -r requirements.txt
 python app.py
+```
 
-### Open your browser and go to:
+---
+
+### Open the application in your browser:
 
 http://127.0.0.1:5000
 
-### How to Use
-## Step 1: Add Repositories
-- Enter GitHub repository URLs you want to compare
-- Add or remove repositories as needed
+## Usage Guide
 
-## Step 2: Set Similarity Threshold
-- Adjust how strict the plagiarism detection should be
-- Higher threshold means stricter detection
+### Step 1: Add Repositories
+Enter at least two GitHub repository URLs
 
-## Step 3: Run Analysis
-- Click Run Analysis
-- A loading indicator shows processing
+Additional repositories can be added if required
 
-## Step 4: View Results
-- See plagiarism confidence
-- Explore:
--> Commit Message Similarity
--> Repository Similarity Matrix
--> Download reports if required
+### Step 2: Configure Similarity Threshold
+Adjust threshold to control strictness of detection
 
-### Project Structure (High-Level)
+### Step 3: Run Analysis
+Click Run Analysis
 
-`GitHub-Plagiarism-Detection/
+A loading spinner indicates processing
+
+### Step 4: View Results
+Review plagiarism confidence
+
+Explore repository and commit similarities
+
+Download reports if required
+
+---
+
+## Project Structure
+```
+GitHub-Plagiarism-Detection/
 │
 ├── app.py
 ├── routes.py
 ├── services/
 │   ├── report_generator.py
-│   └── similarity_analysis.py
+│   ├── similarity.py
+│   └── commit_message_similarity.py
 │
 ├── templates/
 │   ├── dashboard.html
@@ -127,25 +158,35 @@ http://127.0.0.1:5000
 │   └── img/
 │
 ├── requirements.txt
-└── README.md`
+└── README.md
+```
 
-### Academic Note
+## Testing
 
-This project is intended for:
+The project has been tested using:
 
-- Academic submissions
-- Learning and experimentation
-- Demonstrating plagiarism detection concepts
-- It should not be used as a sole authority for plagiarism decisions in production environments.
+- Small Python projects
+- Medium-sized applications
+- Large open-source frameworks
+- Domain-diverse repositories
 
-## Future Improvements
+Test Coverage
 
-- Side-by-side code comparison
-- Token-level similarity visualization
-- User authentication
-- Per-user analysis history
-- Improved similarity algorithms
+- Positive test cases (expected similarity)
+- Negative test cases (unrelated repositories)
 
-## License
-This project is provided for educational purposes.
-You are free to modify and extend it for learning or academic use.
+- Edge cases:
+  -> Minimum repository enforcement
+  -> Large repositories
+  -> Empty analysis runs
+
+Detailed test cases are documented in `TEST_CASES.md.`
+
+## Future Enhancements
+
+- Side-by-side comparison for multiple files
+- AST-based and semantic similarity detection
+- Background task processing
+- Progress indicators
+- Multi-language code support
+- User authentication and analysis history

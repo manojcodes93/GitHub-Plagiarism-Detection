@@ -35,8 +35,7 @@ def analyze():
             return redirect(url_for("main.analyze"))
 
         data = generate_report(repo_urls, language, threshold)
-
-        # store threshold for templates
+        
         data["threshold"] = threshold
 
         global LAST_REPORT, ANALYSIS_ACTIVE

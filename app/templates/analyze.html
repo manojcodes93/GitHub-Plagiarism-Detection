@@ -41,14 +41,6 @@
 Run Analysis
 </button>
 
-<button class="primary-btn get-started-btn"
-        type="button"
-        id="stopBtn"
-        onclick="stopAnalysis()"
-        style="display:none;background:#7f1d1d;">
-Stop Analysis
-</button>
-
 
 </form>
 
@@ -132,18 +124,14 @@ updateThresholdInfo();
 function startAnalysis() {
     document.getElementById("processing").style.display = "block";
     document.getElementById("runBtn").style.display = "none";
-    document.getElementById("stopBtn").style.display = "block";
 
+    // scroll to bottom smoothly
     setTimeout(() => {
-        document.getElementById("processing")
-            .scrollIntoView({ behavior: "smooth" });
+        window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: "smooth"
+        });
     }, 100);
-}
-
-function stopAnalysis() {
-    document.getElementById("processing").style.display = "none";
-    document.getElementById("runBtn").style.display = "block";
-    document.getElementById("stopBtn").style.display = "none";
 }
 </script>
 

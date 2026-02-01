@@ -53,6 +53,7 @@ def generate_report(repo_urls, language, threshold):
             dirs[:] = [d for d in dirs if d not in Config.SKIP_DIRS]
 
             for file in files:
+                
                 if not file.endswith(language):
                     continue
 
