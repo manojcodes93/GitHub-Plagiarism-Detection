@@ -2,13 +2,11 @@ import os
 
 from .github_service import clone_repositories, extract_commit_messages
 from .commit_message_similarity import compute_commit_message_similarity
-from .similarity import compute_repo_similarity_matrix, compute_file_similarity_pairs
+from .similarity import compute_repo_similarity_matrix
 from .report_exporter import generate_csv_report, generate_pdf_report
-from .code_diff import generate_side_by_side_diff
 from .preprocessing import preprocess_code
 from ..config import Config
 from .commit_message_similarity import compare_two_commit_messages
-from .similarity import compute_best_file_pair
 
 
 
@@ -33,6 +31,8 @@ def is_noise_commit(msg: str) -> bool:
 
 
 def generate_report(repo_urls, language, threshold):
+    left_html = None
+    right_html = None
 
     # -------------------------
     # Clone repos
@@ -113,27 +113,6 @@ def generate_report(repo_urls, language, threshold):
                     (matrix_names[i], matrix_names[j], score)
                 )
 
-    left_html = None
-    right_html = None
-    if repo_pairs:
-        repo_pairs.sort(key=lambda x: x[2], reverse=True)
-        ra, rb, repo_score = repo_pairs[0]
-
-        best = compute_best_file_pair(
-            repo_file_texts[ra],
-            repo_file_texts[rb]
-        )
-
-        if best:
-            fa, fb, file_score = best
-            if file_score >= 0.3:   # reasonable file-level similarity
-                left_code = repo_file_texts[ra][fa]
-                right_code = repo_file_texts[rb][fb]
-
-                left_html, right_html = generate_side_by_side_diff(left_code, right_code)
-
-                print(f"[DIFF] {ra} ↔ {rb} | file similarity = {file_score:.3f}")
-
     # -------------------------
     # Commit collection (repo-aware)
     # -------------------------
@@ -181,42 +160,10 @@ def generate_report(repo_urls, language, threshold):
                 )
 
     # -------------------------
-    # File similarity pairs
+    # File similarity pairs (COMING SOON)
     # -------------------------
-    raw_file_pairs = compute_file_similarity_pairs(
-        repo_file_texts,
-        threshold=threshold
-    )
-
     file_similarity_table = []
-    for ra, rb, fa, fb, score in raw_file_pairs:
-        file_similarity_table.append({
-            "repo_a": ra,
-            "file_a_index": fa,
-            "repo_b": rb,
-            "file_b_index": fb,
-            "similarity": round(float(score), 3)
-        })
 
-    # -------------------------
-    # Side-by-side code
-    # -------------------------
-    left_html = None
-    right_html = None
-
-    left_html = None
-    right_html = None
-    if raw_file_pairs:
-        best_pair = max(raw_file_pairs, key=lambda x: x[4])
-
-        ra, rb, fa, fb, score = best_pair
-
-        if score >= (threshold * 0.6):
-            left_code = repo_file_texts[ra][fa]
-            right_code = repo_file_texts[rb][fb]
-            left_html, right_html = generate_side_by_side_diff(left_code, right_code)
-
-            print(f"[DIFF] Showing {ra}[{fa}] vs {rb}[{fb}] score={score:.3f}")
 
     # -------------------------
     # Export reports
