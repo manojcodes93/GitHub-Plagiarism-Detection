@@ -53,3 +53,12 @@ def compute_commit_message_similarity(commits, threshold=0.6):
                 results.append((a, b, round(score, 2)))
 
     return results
+
+
+from difflib import SequenceMatcher
+
+def compare_two_commit_messages(a: str, b: str) -> float:
+    """
+    Compare exactly TWO commit messages and return similarity score.
+    """
+    return SequenceMatcher(None, a, b).ratio()

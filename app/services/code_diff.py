@@ -1,32 +1,25 @@
 import html
+from difflib import SequenceMatcher
 
 
 def generate_side_by_side_diff(left_code, right_code):
-    """
-    Very simple line‑based highlighter:
-    - identical normalized lines are highlighted
-    """
+    left = left_code.splitlines()
+    right = right_code.splitlines()
 
-    left_lines = left_code.splitlines()
-    right_lines = right_code.splitlines()
+    sm = SequenceMatcher(None, left, right)
 
-    # normalize for comparison
-    left_norm = [l.strip() for l in left_lines]
-    right_norm = [r.strip() for r in right_lines]
+    left_out = []
+    right_out = []
 
-    common = set(left_norm) & set(right_norm)
+    for tag, i1, i2, j1, j2 in sm.get_opcodes():
+        if tag == "equal":
+            for l, r in zip(left[i1:i2], right[j1:j2]):
+                left_out.append(f"<mark>{html.escape(l)}</mark>")
+                right_out.append(f"<mark>{html.escape(r)}</mark>")
+        else:
+            for l in left[i1:i2]:
+                left_out.append(html.escape(l))
+            for r in right[j1:j2]:
+                right_out.append(html.escape(r))
 
-    def highlight(lines, norm_lines):
-        out = []
-        for raw, norm in zip(lines, norm_lines):
-            escaped = html.escape(raw)
-            if norm and norm in common:
-                out.append(f"<mark>{escaped}</mark>")
-            else:
-                out.append(escaped)
-        return "<br>".join(out)
-
-    left_html = highlight(left_lines, left_norm)
-    right_html = highlight(right_lines, right_norm)
-
-    return left_html, right_html
+    return "<br>".join(left_out), "<br>".join(right_out)

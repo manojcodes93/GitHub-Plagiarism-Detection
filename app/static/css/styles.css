@@ -136,3 +136,28 @@ input[type="range"]::-moz-range-thumb {
     padding: 14px 36px;       /* horizontal size control */
     display: inline-block;    /* prevents stretching */
 }
+
+
+.code-compare {
+    display: flex;
+    gap: 16px;
+}
+
+.code-block {
+    width: 50%;
+    background: #020617;
+    border: 1px solid #334155;
+    padding: 14px;
+    border-radius: 10px;
+    font-family: Consolas, monospace;
+    font-size: 13px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+
+mark {
+    background: #7c2d12;
+    color: #fff;
+    padding: 0 2px;
+    border-radius: 3px;
+}

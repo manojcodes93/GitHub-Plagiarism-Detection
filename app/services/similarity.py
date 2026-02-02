@@ -59,3 +59,35 @@ def compute_file_similarity_pairs(repo_file_texts, threshold=0.7):
                         results.append((ra, rb, fa, fb, score))
 
     return results
+
+
+def compute_best_file_pair(repo_a_files, repo_b_files):
+    """
+    Compare ALL files from repo A vs repo B
+    Return the single most similar file pair.
+    """
+    if not repo_a_files or not repo_b_files:
+        return None
+
+    docs = repo_a_files + repo_b_files
+
+    if not any(d.strip() for d in docs):
+        return None
+
+    vectorizer = TfidfVectorizer(max_features=4000)
+    tfidf = vectorizer.fit_transform(docs)
+    sim = cosine_similarity(tfidf)
+
+    split = len(repo_a_files)
+
+    best = None
+    best_score = 0.0
+
+    for i in range(len(repo_a_files)):
+        for j in range(len(repo_b_files)):
+            score = float(sim[i][split + j])
+            if score > best_score:
+                best_score = score
+                best = (i, j, best_score)
+
+    return best

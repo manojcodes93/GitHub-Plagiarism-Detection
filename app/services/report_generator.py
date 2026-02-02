@@ -7,6 +7,9 @@ from .report_exporter import generate_csv_report, generate_pdf_report
 from .code_diff import generate_side_by_side_diff
 from .preprocessing import preprocess_code
 from ..config import Config
+from .commit_message_similarity import compare_two_commit_messages
+from .similarity import compute_best_file_pair
+
 
 
 IGNORE_KEYWORDS = [
@@ -99,6 +102,38 @@ def generate_report(repo_urls, language, threshold):
             row.append(None if i == j else round(float(sim_matrix[i][j]), 3))
         matrix_table.append(row)
 
+    repo_pairs = []
+
+    
+    for i in range(len(matrix_names)):
+        for j in range(i + 1, len(matrix_names)):
+            score = float(sim_matrix[i][j])
+            if score >= threshold * 0.7:   # relaxed repo-level gate
+                repo_pairs.append(
+                    (matrix_names[i], matrix_names[j], score)
+                )
+
+    left_html = None
+    right_html = None
+    if repo_pairs:
+        repo_pairs.sort(key=lambda x: x[2], reverse=True)
+        ra, rb, repo_score = repo_pairs[0]
+
+        best = compute_best_file_pair(
+            repo_file_texts[ra],
+            repo_file_texts[rb]
+        )
+
+        if best:
+            fa, fb, file_score = best
+            if file_score >= 0.3:   # reasonable file-level similarity
+                left_code = repo_file_texts[ra][fa]
+                right_code = repo_file_texts[rb][fb]
+
+                left_html, right_html = generate_side_by_side_diff(left_code, right_code)
+
+                print(f"[DIFF] {ra} ↔ {rb} | file similarity = {file_score:.3f}")
+
     # -------------------------
     # Commit collection (repo-aware)
     # -------------------------
@@ -138,15 +173,11 @@ def generate_report(repo_urls, language, threshold):
             if repo_a == repo_b:
                 continue
 
-            score = compute_commit_message_similarity(
-                [msg_a, msg_b],
-                threshold=threshold
-            )
+            score = compare_two_commit_messages(msg_a, msg_b)
 
-            if score:
-                _, _, s = score[0]
+            if score >= threshold:
                 suspicious_commits_with_repo.append(
-                    (repo_a, msg_a, repo_b, msg_b, round(float(s), 3))
+                    (repo_a, msg_a, repo_b, msg_b, round(score, 3))
                 )
 
     # -------------------------
@@ -173,18 +204,19 @@ def generate_report(repo_urls, language, threshold):
     left_html = None
     right_html = None
 
+    left_html = None
+    right_html = None
     if raw_file_pairs:
-        try:
-            ra, rb, fa, fb, _ = raw_file_pairs[0]
+        best_pair = max(raw_file_pairs, key=lambda x: x[4])
+
+        ra, rb, fa, fb, score = best_pair
+
+        if score >= (threshold * 0.6):
             left_code = repo_file_texts[ra][fa]
             right_code = repo_file_texts[rb][fb]
+            left_html, right_html = generate_side_by_side_diff(left_code, right_code)
 
-            left_html, right_html = generate_side_by_side_diff(
-                left_code,
-                right_code
-            )
-        except Exception:
-            pass
+            print(f"[DIFF] Showing {ra}[{fa}] vs {rb}[{fb}] score={score:.3f}")
 
     # -------------------------
     # Export reports

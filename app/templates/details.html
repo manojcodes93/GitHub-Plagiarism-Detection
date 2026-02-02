@@ -66,9 +66,11 @@ Repository Similarity Matrix
 
 <br>
 
-<button class="primary-btn compare-btn" onclick="showComingSoon(this)">
-View Side‑by‑Side Code
+<button class="primary-btn compare-btn"
+onclick="location.href='{{ url_for('main.compare_view') }}'">
+View Side-by-Side Code
 </button>
+
 
 <div id="sideBySideComingSoon"
      style="
@@ -102,15 +104,6 @@ View Side‑by‑Side Code
 </div>
 
 </div>
-
-<script>
-function showComingSoon(btn) {
-    const box = document.getElementById("sideBySideComingSoon");
-    box.style.display = "block";
-    btn.disabled = true;
-    btn.innerText = "Side‑by‑Side (Coming Soon)";
-}
-</script>
 
 {% endif %}
 {% endblock %}
